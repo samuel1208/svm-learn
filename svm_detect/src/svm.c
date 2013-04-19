@@ -6,7 +6,7 @@
 #define   INIT_SVM_FUNC(suffix)                                     \
           static svm_model*  Init_svm_##suffix (THandle hMemBuf)    \
           {                                                         \
-              int rVal = 0, m = 0, total_sv_num=0, i, j, k;         \
+              int rVal = 0, m = 0, total_sv_num=0, i, j;            \
               svm_model *pSvmModel = TNull;                         \
                                                                     \
               pSvmModel = TMemAlloc(hMemBuf, sizeof(svm_model));    \
@@ -80,9 +80,9 @@ static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_n
 static double __svm_predict_values(THandle hMemBuf, const svm_model *model, const svm_node *x, double* dec_values);
 static double k_function(const svm_node *x, const svm_node *y, const svm_parameter* param);
 static double dot(const svm_node *px, const svm_node *py);
-static inline double powi(double base, int times);
+static double powi(double base, int times);
 
-static inline double powi(double base, int times)
+static double powi(double base, int times)
 {
 	double tmp = base, ret = 1.0;
     int t;

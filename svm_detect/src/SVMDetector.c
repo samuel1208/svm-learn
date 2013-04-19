@@ -60,7 +60,7 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
         goto EXIT;
 
     // convert to gray
-    rVal = BGRtoGray1(pBGR_scale, IMG_WIDTH, IMG_HEIGHT, IMG_WIDTH*3, pGray);
+    rVal = BGRtoGray(pBGR_scale, IMG_WIDTH, IMG_HEIGHT, IMG_WIDTH*3, pGray);
     if(0 != rVal)
         goto EXIT;
 

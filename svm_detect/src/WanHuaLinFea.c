@@ -98,15 +98,15 @@ int WanHuaLinColorFea(unsigned char *pHSL,  int i32LineByte, int i32Width, int i
     return 0;
 }
 
-int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, int lineBytesRGB, int lineBytesHSL)
+int  BGRtoHSL(unsigned char *pBGR, unsigned char *pHSL, int rows, int cols, int lineBytesBGR, int lineBytesHSL)
 {
 	register int RH, GS, BL;
 	register int  nAdd,nDelta,cMax,cMin;
 	
-    if ((TNull == pRGB) || (TNull == pHSL))
+    if ((TNull == pBGR) || (TNull == pHSL))
         return -1;
 
-	lineBytesRGB -= cols * 3;
+	lineBytesBGR -= cols * 3;
 	lineBytesHSL -= cols * 3;
 	rows |= cols << 16;
 	for(; (rows << 16) != 0; rows--)
@@ -114,9 +114,9 @@ int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, int 
 		for(cols = rows >> 16; cols!= 0; cols--)
 		{
 
-			RH = pRGB[0];			
-			GS = pRGB[1];
-            BL = pRGB[2];
+			BL = pBGR[0];			
+			GS = pBGR[1];
+            RH = pBGR[2];
 			
 			if(RH > GS)
 			{
@@ -185,10 +185,10 @@ int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, int 
 			pHSL[0]=trimBYTE(RH);
 			pHSL[1]=trimBYTE(GS);
 			pHSL[2]=trimBYTE(BL);			
-			pRGB += 3;
+			pBGR += 3;
 			pHSL += 3;
 		}
-		pRGB += lineBytesRGB;
+		pBGR += lineBytesBGR;
 		pHSL += lineBytesHSL;
 	}
     return 0;
