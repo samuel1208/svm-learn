@@ -303,7 +303,7 @@ static double __svm_predict_values(THandle hMemBuf, const svm_model *model, cons
 
 static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower, int upper, int feaLen)
 {
-    int i, j;
+    int i, j, index;
     int i32FeaVal, i32MaxVal, i32MinVal;
     svm_node  node;
     
@@ -311,6 +311,7 @@ static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower
         return -1;
     
     j = 0;
+	index =0;
     for(i=0; i<feaLen; i++)
     {
         i32FeaVal = pFeaSrc[i];
@@ -318,15 +319,25 @@ static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower
         i32MaxVal = pMinMax[i*2+1];        
 
         if(i32MinVal == i32MaxVal)
+		{
+			index ++;
             continue;
+		}
         else if(i32FeaVal == i32MinVal)
             node.value = lower;
         else if(i32FeaVal == i32MaxVal)
             node.value = upper;
         else
             node.value = lower + (upper-lower)*(i32FeaVal-i32MinVal)*1.0/(i32MaxVal-i32MinVal);
-        node.index = j;
+
+		if(0 == node.value)
+		{
+			index++;
+            continue;
+		}
+        node.index = index;
         pNode[j++] = node;
+		index ++;
     }    
     pNode[j].index = -1;
     return 0;
@@ -343,7 +354,7 @@ int   SvmPredict(THandle hMemBuf, svm_model *pSvmModel, int *pFea, int feaLen, i
     pNode = TMemAlloc(hMemBuf, sizeof(svm_node) * (feaLen+1));
     
     if ( 
-          (TNull == hMemBuf) || (TNull == pSvmModel) || (TNull == pFea) 
+          (TNull == pSvmModel) || (TNull == pFea) 
         ||(TNull == label) || (TNull == pNode)
        )
     {

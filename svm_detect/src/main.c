@@ -11,7 +11,7 @@
 #include "svm.h"
 
 static svm_model *pSvmModel_face = NULL;
-#define SHOW_IMG
+//#define SHOW_IMG
 
 
 int main(int argc, char **argv)
@@ -76,6 +76,11 @@ int main(int argc, char **argv)
         __src_img = cvCreateImage(cvSize(src_img->width, src_img->height), 8,3);
         __src_img_BGR = cvCreateImage(cvSize(src_img->width, src_img->height), 8,3);
 
+		if(src_img->nChannels == 1)
+            cvCvtColor(src_img, __src_img, CV_GRAY2RGB);
+        else
+            memcpy(__src_img->imageData, src_img->imageData, src_img->widthStep*src_img->height); 
+
         cvCvtColor(__src_img, __src_img_BGR, CV_RGB2BGR);
 
         rect.top = rect.left = 0;
@@ -85,7 +90,7 @@ int main(int argc, char **argv)
         rval = SVMDetector(NULL, pSvmModel_face, __src_img_BGR->imageData,
                            __src_img_BGR->width, __src_img_BGR->height,
                            __src_img_BGR->widthStep, rect, &label);
-        if(0 != rval)
+        if(0 == rval)
             fprintf(file_output, "%d\n", label);
         else
             fprintf(file_output, "%s :: failed",image_path_name);

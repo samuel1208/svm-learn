@@ -18,7 +18,7 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
     int dstWidth=0, dstHeight=0;
     int *pFea = TNull;
 
-    if((TNull == hMemBuf) || (TNull == pBGR) || (TNull == label))
+    if((TNull == pBGR) || (TNull == label))
     {
         rVal = -1;
         goto EXIT;
@@ -28,10 +28,10 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
 
     if(!(  ((region.top>=0)&&(region.top<srcHeight))
        &&((region.bottom>0)&&(region.bottom<=srcHeight))
-       &&((region.left>=0)&&(region.left<srcHeight))
-       &&((region.right>0)&&(region.right<+srcHeight))
+       &&((region.left>=0)&&(region.left<srcWidth))
+       &&((region.right>0)&&(region.right<=srcWidth))
        &&((dstWidth>0)&&(dstWidth <= srcWidth))
-       &&((dstHeight>0)&&(dstWidth <= srcHeight))
+       &&((dstHeight>0)&&(dstHeight<= srcHeight))
            ))
     {
         rVal =-1;
@@ -71,10 +71,14 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
 
     // get Hog Fea
     rVal =  HogFea(pGray, IMG_WIDTH,  IMG_HEIGHT, pFea+WAN_DIM);
+	if(0 != rVal)
+        goto EXIT;
 
     //predict
     
      rVal = SvmPredict(hMemBuf, pSvmModel, pFea, SVM_FEA_DIM, label);
+	 if(0 != rVal)
+		 goto EXIT;
   
 
     rVal = 0;

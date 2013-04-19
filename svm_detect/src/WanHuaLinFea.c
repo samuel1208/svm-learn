@@ -233,9 +233,9 @@ int  BGRtoGray(unsigned char *pBGR, int width, int height, int widthStep, unsign
     int w,h;
     int val;
     unsigned char r, g, b;
-    unsigned char *pSrc, *pDst;
+    unsigned char *pSrc = TNull, *pDst=TNull;
     
-    if((TNull == pSrc)||(TNull == pDst))
+    if((TNull == pBGR)||(TNull == pGray))
         return -1;
     pSrc = pBGR;
     pDst = pGray;

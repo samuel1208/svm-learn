@@ -397,7 +397,7 @@ static void HoG(double *pixels, double *params, int *img_size, double *dth_des, 
     vector<vector<vector<double> > > block(block_size, vector<vector<double> > (block_size, vector<double> (nb_bins, 0.0) ) );
     
     //Calculate gradients (zero padding)
-    FILE *file = fopen("./Hig.txt", "w");
+   // FILE *file = fopen("./Hig.txt", "w");
     
     for(unsigned int y=0; y<img_height; y++) {
         for(unsigned int x=0; x<img_width; x++) {
@@ -462,7 +462,7 @@ static void HoG(double *pixels, double *params, int *img_size, double *dth_des, 
                     }
                 }
             }
-            fprintf(file, "%d, %d,", (int)dx[0], (int)dy[0]);
+            //fprintf(file, "%d, %d,", (int)dx[0], (int)dy[0]);
             grad_mag = sqrt(dx[0]*dx[0] + dy[0]*dy[0]);
             grad_or= atan2(dy[0], dx[0]);
             
@@ -561,7 +561,7 @@ static void HoG(double *pixels, double *params, int *img_size, double *dth_des, 
         }
     }
 
-    fclose(file);
+    //fclose(file);
 }
 
 /*
