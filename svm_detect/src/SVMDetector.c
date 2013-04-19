@@ -65,12 +65,12 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
     if(0 != rVal)
         goto EXIT;
 
-    //get wan feature
+    //get wan feature : fast sample by setp 2 
     rVal = WanHuaLinColorFea(pHSL, IMG_WIDTH*3, IMG_WIDTH,  IMG_HEIGHT, pFea);
     if(0 != rVal)
         goto EXIT;
 
-    // get Hog Fea
+    // get Hog Fea : 0-180
     rVal =  HogFea(pGray, IMG_WIDTH,  IMG_HEIGHT, pFea+WAN_DIM);
 	if(0 != rVal)
         goto EXIT;
