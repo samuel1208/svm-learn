@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 2.8)
+cmake_policy(SET CMP0015 NEW)
+
+if(UNIX)
+    add_definitions(-DUNIX)
+	#find_package(OpenCV PATHS "/home/samuel/install/share" NO_DEFAULT_PATH)
+    find_package(OpenCV PATHS "/home/fshen/Install_samuel/OpenCV/OpenCV-2.4.2/Debug/share/OpenCV/" NO_DEFAULT_PATH)
+    
+	#find_package(OpenCV PATHS "/home/fshen/samuel/project_self/bow-opencv/opencv/build" NO_DEFAULT_PATH)
+elseif(WIN32)
+    add_definitions(-DWIN32)
+	find_package(OpenCV PATHS "D:/software/OpenCV/OpenCV-2.3.0/build"  NO_DEFAULT_PATH)
+	#include("D:/software/OpenCV/OpenCV-2.3.0/build/OpenCVConfig.cmake")
+else()
+    message("this library only support on windows and unix")
+	return()	
+endif()
+
+include_directories(${OpenCV_INCLUDE_DIRS}) 
+include_directories(./inc)
+MESSAGE(${OpenCV_INCLUDE_DIRS})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+aux_source_directory(src src_files)
+
+SET(target_name "svm_detector") 
+add_executable(${target_name}  ${src_files} )
+target_link_libraries(${target_name} ${OpenCV_LIBS})
