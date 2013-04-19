@@ -2,7 +2,7 @@
 #include "svm_constant.h"
 #include "tmem.h"
 #include "math.h"
-#include <stdio.h>
+
 #define   INIT_SVM_FUNC(suffix)                                     \
           static svm_model*  Init_svm_##suffix (THandle hMemBuf)    \
           {                                                         \

@@ -3,6 +3,8 @@
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
 #include "svm.h"
+//#include <opencv/cv.h>
+//#include <opencv/highgui.h>
 
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
@@ -54,6 +56,27 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
                      pBGR_scale, IMG_WIDTH, IMG_HEIGHT, IMG_WIDTH*3);
     if(0 != rVal)
         goto EXIT;
+	//{		
+	//	IplImage  *tmp_0  = cvCreateImageHeader(cvSize(srcWidth, srcHeight), 8, 3);
+	//	IplImage  *tmp_1  = cvCreateImageHeader(cvSize(dstWidth, dstHeight), 8, 3);
+	//	IplImage  *tmp_2  = cvCreateImageHeader(cvSize(48, 48), 8, 3);
+	//	cvNamedWindow("test", 0);
+	//	tmp_0->widthStep = srcWidthStep;
+	//	tmp_1->widthStep = srcWidthStep;
+	//	tmp_2->widthStep = 48*3;
+	//	tmp_0->imageData = pBGR - region.top*srcWidthStep + region.left;
+	//	tmp_1->imageData = pBGR;
+	//	tmp_2->imageData = pBGR_scale;
+	//	cvShowImage("test", tmp_0);
+ //       cvWaitKey(0);
+	//	cvShowImage("test", tmp_1);
+ //       cvWaitKey(0);
+	//	cvShowImage("test", tmp_2);
+ //       cvWaitKey(0);
+	//	cvReleaseImageHeader(&tmp_0);
+	//	cvReleaseImageHeader(&tmp_1);
+	//	cvReleaseImageHeader(&tmp_2);
+	//}
 
 	// convert to HSL
     rVal = BGRtoHSL(pBGR_scale, pHSL, IMG_HEIGHT, IMG_WIDTH, IMG_WIDTH*3, IMG_WIDTH*3);

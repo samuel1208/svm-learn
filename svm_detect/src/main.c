@@ -85,8 +85,8 @@ int main(int argc, char **argv)
         cvCvtColor(__src_img, __src_img_BGR, CV_RGB2BGR);
 
         rect.top = rect.left = 0;
-        rect.bottom = __src_img->height;
-        rect.right = __src_img->width;
+        rect.bottom = 200;//__src_img->height;
+        rect.right = 200;//__src_img->width;
 
         rval = SVMDetector(NULL, pSvmModel_face, __src_img_BGR->imageData,
                            __src_img_BGR->width, __src_img_BGR->height,
