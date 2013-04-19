@@ -3,6 +3,7 @@
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
 #include "svm.h"
+#include <stdio.h>
 
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
@@ -49,12 +50,13 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
     }
     
     // scale image to IMG_WIDTH
-    rVal = ScaleImg3(pBGR, dstWidth, dstHeight, srcWidthStep,
+	pBGR += region.top*srcWidthStep + region.left;
+	rVal = ScaleImg3(pBGR , dstWidth, dstHeight, srcWidthStep,
                      pBGR_scale, IMG_WIDTH, IMG_HEIGHT, IMG_WIDTH*3);
     if(0 != rVal)
         goto EXIT;
-    
-    // convert to HSL
+
+	// convert to HSL
     rVal = BGRtoHSL(pBGR_scale, pHSL, IMG_HEIGHT, IMG_WIDTH, IMG_WIDTH*3, IMG_WIDTH*3);
     if(0 != rVal)
         goto EXIT;
@@ -74,8 +76,21 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
 	if(0 != rVal)
         goto EXIT;
 
-    //predict
-    
+	//
+	{
+		int i=0;
+		FILE *file=fopen("../bin/dfea.txt","w");
+		fprintf(file, "%d ", 1);
+        for(i=0; i<SVM_FEA_DIM; i++)
+        {
+            fprintf(file, "%d:%d ", i+1, pFea[i]);
+        }
+		fprintf(file,"\n");
+		fclose(file);
+	}
+	//
+
+    //predict    
      rVal = SvmPredict(hMemBuf, pSvmModel, pFea, SVM_FEA_DIM, label);
 	 if(0 != rVal)
 		 goto EXIT;

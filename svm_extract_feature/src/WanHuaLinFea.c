@@ -1,7 +1,7 @@
 #include "WanHuaLinFea.h"
-#include "tcomdef.h"
-#define trimBYTE(x)		(unsigned char)((x)&(~255) ? ((-(x))>>31) : (x))
 
+#define trimBYTE(x)		(unsigned char)((x)&(~255) ? ((-(x))>>31) : (x))
+#define MNULL 0
 static const  char  hueTab[256] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 
@@ -50,7 +50,7 @@ int WanHuaLinColorFea(unsigned char *pHSL,  int i32LineByte, int i32Width, int i
 	int   hist[COLOR_BIN]={0};
 	int   size;
 	
-    if ((TNull == pHSL) || (TNull == pFea))
+    if ((MNULL == pHSL) || (MNULL == pFea))
         return -1;
 
 	lineBytes = i32LineByte;	
@@ -87,7 +87,7 @@ int WanHuaLinColorFea(unsigned char *pHSL,  int i32LineByte, int i32Width, int i
 				index += 1;
 			
 			hist[index]++;			
-			pt+=3*GAP;
+			pt+=3*GAP;;
 		}
 	}
 	
@@ -98,108 +98,12 @@ int WanHuaLinColorFea(unsigned char *pHSL,  int i32LineByte, int i32Width, int i
     return 0;
 }
 
-int  BGRtoHSL(unsigned char *pBGR, unsigned char *pHSL, int rows, int cols, int lineBytesBGR, int lineBytesHSL)
-{
-	register int RH, GS, BL;
-	register int  nAdd,nDelta,cMax,cMin;
-	
-    if ((TNull == pBGR) || (TNull == pHSL))
-        return -1;
-
-	lineBytesBGR -= cols * 3;
-	lineBytesHSL -= cols * 3;
-	rows |= cols << 16;
-	for(; (rows << 16) != 0; rows--)
-	{
-		for(cols = rows >> 16; cols!= 0; cols--)
-		{
-
-			BL = pBGR[0];			
-			GS = pBGR[1];
-            RH = pBGR[2];
-			
-			if(RH > GS)
-			{
-				if(BL > RH)
-				{
-					cMax = BL;
-					cMin = GS;
-					nDelta = (int)GS - (int)RH;
-					nAdd = 170;
-				}
-				else
-				{
-					cMax = RH;
-					nDelta = (int)BL - (int)GS;
-					nAdd = 0;
-					if(BL < GS)
-						cMin = BL;
-					else
-						cMin = GS;
-				}
-			}
-			else
-			{
-				if(BL > GS)
-				{
-					cMax = BL;
-					cMin = RH;
-					nDelta = (int)GS - (int)RH;
-					nAdd = 170;
-				}
-				else 
-				{
-					cMax = GS;
-					nDelta = (int)RH - (int)BL;
-					nAdd = 85;
-					if(BL < RH)
-						cMin = BL;
-					else
-						cMin = RH;
-				}
-			}
-
-			BL = (unsigned char)(((cMax+cMin)+1)>>1);
-			if (cMax==cMin){			// r=g=b --> achromatic case
-				GS = 0;					// saturation
-				RH = 170;
-			}
-			else 
-			{	// chromatic case		
-				cMax += cMin;
-				cMin = cMax - (cMin << 1);
-//				mid = cMax+cMin;
-//				sub = cMax-cMin;
-				
-				if (BL > 127)
-					cMax = 510 - cMax;
-
-				GS = g_ByteDivTab[cMax];
-				RH = g_ByteDivTab[cMin];
-
-				//GS = (MByte)(((cMin*255)+(cMax>>1))/cMax);
-				//RH = (MByte)(nAdd - ( nDelta * 42  + (cMin>>1) ) / cMin);
-				GS = (((cMin*255)+(cMax>>1)) * GS >> 16);
-				RH = (nAdd - (( nDelta * 42  + (cMin>>1) )  * RH >> 16));
-			}	
-			pHSL[0]=trimBYTE(RH);
-			pHSL[1]=trimBYTE(GS);
-			pHSL[2]=trimBYTE(BL);			
-			pBGR += 3;
-			pHSL += 3;
-		}
-		pBGR += lineBytesBGR;
-		pHSL += lineBytesHSL;
-	}
-    return 0;
-}
-
 int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, int lineBytesRGB, int lineBytesHSL)
 {
 	register int RH, GS, BL;
 	register int  nAdd,nDelta,cMax,cMin;
 	
-    if ((TNull == pRGB) || (TNull == pHSL))
+    if ((MNULL == pRGB) || (MNULL == pHSL))
         return -1;
 
 	lineBytesRGB -= cols * 3;
@@ -287,63 +191,5 @@ int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, int 
 		pRGB += lineBytesRGB;
 		pHSL += lineBytesHSL;
 	}
-    return 0;
-}
-
-int  ScaleImg3(unsigned char *pSrc, int srcWidth, int srcHeight, int srcWidthStep,
-               unsigned char *pDst, int dstWidth, int dstHeight, int dstWidthStep)
-{
-    int w,h, index_x, index_y;
-    float scale_x, scale_y;
-    unsigned char *pData;
-    
-    if((TNull == pSrc)||(TNull == pDst))
-        return -1;
-    
-    scale_x = srcWidth*1.0f/dstWidth;
-    scale_y = srcHeight*1.0f/dstHeight;
-
-    pData = pDst;
-    for(h=0; h<dstHeight; h++)
-    {
-        index_y = (int)(h*scale_y/* + 0.5f*/); //the same to opencv CV_INTER_NN
-        index_y = TMIN(index_y, srcHeight-1);
-        
-        for(w=0; w<dstWidth; w++)
-        {
-            index_x = (int)(w*scale_x/* + 0.5f*/);
-            index_x = TMIN(index_x, srcWidth-1);
-            pData[3*w] = pSrc[index_y*srcWidthStep + index_x*3];
-            pData[3*w+1] = pSrc[index_y*srcWidthStep + index_x*3+1];
-            pData[3*w+2] = pSrc[index_y*srcWidthStep + index_x*3+2];
-        }
-        pData += dstWidthStep;
-    }
-    return 0;
-}
-
-
-int  BGRtoGray(unsigned char *pBGR, int width, int height, int widthStep, unsigned char *pGray)
-{
-    int w,h;
-    unsigned char r, g, b;
-    unsigned char *pSrc = TNull, *pDst=TNull;
-    
-    if((TNull == pBGR)||(TNull == pGray))
-        return -1;
-    pSrc = pBGR;
-    pDst = pGray;
-    for(h=0; h<height; h++)
-    {
-        for(w=0; w<width; w++)
-        {
-            b = pSrc[w*3];
-            g = pSrc[w*3+1];
-            r = pSrc[w*3+2];
-            pDst[w] = (int)(r*0.299 + g*0.587 + b*0.114+0.5f);
-        }
-        pSrc += widthStep;
-        pDst += width;
-    }
     return 0;
 }

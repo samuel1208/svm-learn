@@ -65,7 +65,8 @@ int main(int argc, char **argv)
         memset(image_path_name, 0, 1024);
         fgets(image_path_name, 1024,file);
         //clean the last character "\n"
-        image_path_name[strlen(image_path_name)-1]=0;
+		if((strlen(image_path_name)>1)&&('\n'==image_path_name[strlen(image_path_name)-1]))
+			image_path_name[strlen(image_path_name)-1]=0;
         src_img = NULL; 
         src_img =  (IplImage*)cvLoadImage(image_path_name,1);
         if(NULL == src_img)
