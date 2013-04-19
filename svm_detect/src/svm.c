@@ -2,7 +2,7 @@
 #include "svm_constant.h"
 #include "tmem.h"
 #include "math.h"
-
+#include <stdio.h>
 #define   INIT_SVM_FUNC(suffix)                                     \
           static svm_model*  Init_svm_##suffix (THandle hMemBuf)    \
           {                                                         \
@@ -48,7 +48,10 @@
                   {                                                                  \
                       j++;                                                           \
                       if(-1 == pSvm_node_##suffix[j].index)                          \
-                          break;                                                     \
+					  {                                                              \
+					      j++;                                                       \
+						  break;                                                     \
+		              }                                                              \
                   }                                                                  \
               }                                                                      \
                                                                                      \
@@ -311,12 +314,12 @@ static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower
         return -1;
     
     j = 0;
-	index =0;
+	index =1;
     for(i=0; i<feaLen; i++)
     {
         i32FeaVal = pFeaSrc[i];
         i32MinVal = pMinMax[i*2];
-        i32MaxVal = pMinMax[i*2+1];        
+        i32MaxVal = pMinMax[i*2+1];    
 
         if(i32MinVal == i32MaxVal)
 		{
@@ -369,6 +372,21 @@ int   SvmPredict(THandle hMemBuf, svm_model *pSvmModel, int *pFea, int feaLen, i
     rVal = __featureScale(pFea, pNode, pMinMaxFeaVal, feaLower, feaUpper, feaLen);
     if(0 != rVal)
         goto EXIT;
+
+	//{
+	//	FILE *tmp = fopen("../bin/scal_fea.txt", "w");
+	//	int i=0;
+	//	fprintf(tmp, "%d ", 1);
+ //       for(i=0; i<973; i++)
+ //       {
+	//		if(-1 ==pNode[i].index)
+	//			break;
+ //           fprintf(tmp, "%d:%g ", pNode[i].index, pNode[i].value);
+	//		
+ //       }
+ //       fprintf(tmp,"\n");
+	//	fclose(tmp);			
+	//}
 
     *label = (int)__svm_predict(hMemBuf, pSvmModel,pNode);
 

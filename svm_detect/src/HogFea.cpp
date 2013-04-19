@@ -342,7 +342,7 @@ int HogFea(unsigned char *grayImg, int width, int height, int *pHogFea)
     params[0]=9;
     params[1]=8;
     params[2]=2;
-    params[3]=1;
+    params[3]=0;
     params[4]=0.2;
 
     int hist1= 2+ceil(-0.5 + img_size[0]/params[1]);

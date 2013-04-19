@@ -329,46 +329,46 @@ using namespace std;
 
 int HogFea(unsigned char *grayImg, int width, int height, int *pHogFea)
 {
-    int feaDim = 0;
-    double *pPixel = (double*)malloc(width*height*sizeof(double));
-    double *dPtr = MNULL;
-    double *dFea = MNULL;
-    double params[5];
-    unsigned char *cPtr;
-    int img_size[2]={width, height};
-    int i,j;
+	int feaDim = 0;
+	double *pPixel = (double*)malloc(width*height*sizeof(double));
+	double *dPtr = MNULL;
+	double *dFea = MNULL;
+	double params[5];
+	unsigned char *cPtr;
+	int img_size[2]={width, height};
+	int i,j;
 
-    
-    params[0]=9;
-    params[1]=8;
-    params[2]=2;
-    params[3]=1;
-    params[4]=0.2;
 
-    int hist1= 2+ceil(-0.5 + img_size[0]/params[1]);
-    int hist2= 2+ceil(-0.5 + img_size[1]/params[1]);
-    int nb_bins       = (int) params[0];    
-    int block_size    = (int) params[2];
-    feaDim = (hist1-2-(block_size-1))*(hist2-2-(block_size-1))*nb_bins*block_size*block_size;
+	params[0]=9;
+	params[1]=8;
+	params[2]=2;
+	params[3]=0;
+	params[4]=0.2;
 
-    dFea = (double*)malloc(feaDim*sizeof(double));
+	int hist1= 2+ceil(-0.5 + img_size[0]/params[1]);
+	int hist2= 2+ceil(-0.5 + img_size[1]/params[1]);
+	int nb_bins       = (int) params[0];    
+	int block_size    = (int) params[2];
+	feaDim = (hist1-2-(block_size-1))*(hist2-2-(block_size-1))*nb_bins*block_size*block_size;
 
-    
-    for(i=0; i<height; i++)
-    {
-        dPtr = pPixel + i*width;
-	cPtr = grayImg + i*width;
-	for(j=0; j<width; j++)
+	dFea = (double*)malloc(feaDim*sizeof(double));
+
+
+	for(i=0; i<height; i++)
 	{
-	  dPtr[j] = cPtr[j];	       
+		dPtr = pPixel + i*width;
+		cPtr = grayImg + i*width;
+		for(j=0; j<width; j++)
+		{
+			dPtr[j] = cPtr[j];	       
+		}
 	}
-    }
-    HoG(pPixel,params, img_size, dFea,1);
-    for(i=0; i<feaDim; i++)
-    {
-        pHogFea[i] =(int)( dFea[i]*(1<<24));
-    }
-    return 0;
+	HoG(pPixel,params, img_size, dFea,1);
+	for(i=0; i<feaDim; i++)
+	{
+		pHogFea[i] =(int)( dFea[i]*(1<<24));
+	}
+	return 0;
 }
 static void HoG(double *pixels, double *params, int *img_size, double *dth_des, unsigned int grayscale){
     

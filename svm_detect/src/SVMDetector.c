@@ -3,7 +3,6 @@
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
 #include "svm.h"
-#include <stdio.h>
 
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
@@ -76,25 +75,10 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
 	if(0 != rVal)
         goto EXIT;
 
-	//
-	{
-		int i=0;
-		FILE *file=fopen("../bin/dfea.txt","w");
-		fprintf(file, "%d ", 1);
-        for(i=0; i<SVM_FEA_DIM; i++)
-        {
-            fprintf(file, "%d:%d ", i+1, pFea[i]);
-        }
-		fprintf(file,"\n");
-		fclose(file);
-	}
-	//
-
     //predict    
      rVal = SvmPredict(hMemBuf, pSvmModel, pFea, SVM_FEA_DIM, label);
 	 if(0 != rVal)
-		 goto EXIT;
-  
+		 goto EXIT;  
 
     rVal = 0;
  EXIT:

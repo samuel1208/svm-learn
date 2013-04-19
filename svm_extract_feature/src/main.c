@@ -131,7 +131,7 @@ int main(int argc, char **argv)
             memcpy(__src_img->imageData, src_img->imageData, src_img->widthStep*src_img->height);        
             
         if((IMG_WIDTH != src_img->width) || (IMG_HEIGHT != src_img->height))
-            cvResize(__src_img, resize_img, CV_INTER_NN );
+            cvResize(__src_img, resize_img, CV_INTER_NN);
         else
             memcpy(resize_img->imageData, __src_img->imageData, IMG_WIDTH*IMG_HEIGHT*3);
 		//{

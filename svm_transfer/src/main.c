@@ -44,7 +44,7 @@ static int readMinMaxFile(FILE *srcFile,FILE *file_h, FILE *file_c, char *suffix
 {
     char lineStr[1024]={0};
     int minVal, maxVal;
-    int index;
+    int index, index_full=1, i;
     
     if ((NULL == srcFile) || (NULL == file_h) || (NULL == file_c) || (NULL == suffix))
         return -1; 
@@ -67,11 +67,21 @@ static int readMinMaxFile(FILE *srcFile,FILE *file_h, FILE *file_c, char *suffix
     fprintf(file_c,  "int pMinMaxFeaVal_%s[] = {\n", suffix );
     //read the min and max value for each dim
 
+	index_full = 1;
     memset(lineStr, 0, 1024);
     fgets(lineStr, 1024, srcFile);
     if(3 == sscanf(lineStr,"%d %d %d",&index, &minVal, &maxVal))
     {
-        fprintf(file_c,  "%d, %d", minVal, maxVal);
+		if(index > index_full)
+		{
+			fprintf(file_c,  "%d, %d", 0, 0);
+			for(i=index_full+1; i<index; i++)
+				fprintf(file_c,  ", %d, %d", 0, 0);
+			fprintf(file_c,  ", %d, %d", minVal, maxVal);
+		}
+		else
+			fprintf(file_c,  "%d, %d", minVal, maxVal);
+		index_full = index +1;
     }
     while(!feof(srcFile))
     {
@@ -79,7 +89,14 @@ static int readMinMaxFile(FILE *srcFile,FILE *file_h, FILE *file_c, char *suffix
         fgets(lineStr, 1024, srcFile);
         if(3 != sscanf(lineStr,"%d %d %d",&index, &minVal, &maxVal))
             continue;
-        fprintf(file_c,  ", %d, %d", minVal, maxVal);        
+		if(index > index_full)
+		{
+			for(i=index_full; i<index; i++)
+				fprintf(file_c,  ", %d, %d", 0, 0);
+		}
+		index_full = index +1;
+
+		fprintf(file_c,  ", %d, %d", minVal, maxVal);        
         if(index != 0 && index % 100 == 0)
             fprintf(file_c, "\n");
     }
