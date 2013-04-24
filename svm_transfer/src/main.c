@@ -406,6 +406,7 @@ static int readTrainModel(FILE *srcFile,FILE *file_h, FILE *file_c, char *suffix
             pSv_value[j] = strtod(val,&endptr);
 			++j;
 		}
+	//	pSv_value[j] = 0.0f;
         pSv_index[j++] = -1;
                     
 	}

@@ -18,9 +18,12 @@ else()
 endif()
 
 include_directories(${OpenCV_INCLUDE_DIRS}) 
+include_directories(./svm_common/inc) 
 MESSAGE(${OpenCV_INCLUDE_DIRS})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(./svm_detect)
 add_subdirectory(./svm_extract_feature)
 add_subdirectory(./svm_transfer)
+add_subdirectory(./svm_common)

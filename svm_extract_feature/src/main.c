@@ -155,7 +155,7 @@ int main(int argc, char **argv)
         }
 
         // extract HOG feature	
-        HogFea(gray_img->imageData, gray_img->width, gray_img->height,pFea+WAN_DIM);
+        HogFea(NULL, gray_img->imageData, gray_img->width, gray_img->height,pFea+WAN_DIM);
 
 		//{
 		//	FILE *tmp = fopen("../bin/tmp.txt","wb");
