@@ -165,6 +165,63 @@ static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_n
 	return pred_result;
 }
 
+
+static double k_function(const svm_node *x, const svm_node *y, const svm_parameter* param)
+{
+	switch(param->kernel_type)
+	{
+		case RBF:
+		{
+			long long sum = 0;
+			long long  d = 0;
+			while(x->index != -1 && y->index !=-1)
+			{
+				if(x->index == y->index)
+				{
+					d = x->value - y->value;
+					sum += (d*d)/(1<<24);
+					++x;
+					++y;
+				}
+				else
+				{
+					if(x->index > y->index)
+					{	
+					  sum += (y->value * y->value)/(1<<24);
+						++y;
+					}
+					else
+					{
+					  sum += (x->value * x->value)/(1<<24);
+						++x;
+					}
+				}
+			}
+
+			while(x->index != -1)
+			{
+			  sum += (x->value * x->value)/(1<<24);
+				++x;
+			}
+
+			while(y->index != -1)
+			{
+			  sum += (y->value * y->value)/(1<<24);
+				++y;
+			}
+			//	printf("%lld\n", sum);
+			return exp((-param->gamma*sum)/(1<<24));
+		}
+		case SIGMOID:
+			return tanh(param->gamma*dot(x,y)+param->coef0);
+		case PRECOMPUTED:  //x: test (validation), y: SV
+			return x[(int)(y->value)].value;
+		default:
+			return 0;  // Unreachable 
+	}
+}
+
+/*
 static double k_function(const svm_node *x, const svm_node *y, const svm_parameter* param)
 {
 	switch(param->kernel_type)
@@ -221,7 +278,7 @@ static double k_function(const svm_node *x, const svm_node *y, const svm_paramet
 			return 0;  // Unreachable 
 	}
 }
-
+*/
 static double __svm_predict_values(THandle hMemBuf, const svm_model *model, const svm_node *x, double* dec_values)
 {
 	int i;
@@ -326,11 +383,11 @@ static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower
             continue;
 		}
         else if(i32FeaVal == i32MinVal)
-            node.value = lower;
+	  node.value = lower*(1<<24);
         else if(i32FeaVal == i32MaxVal)
-            node.value = upper;
+            node.value = upper*(1<<24);
         else
-            node.value = lower + (upper-lower)*(i32FeaVal-i32MinVal)*1.0/(i32MaxVal-i32MinVal);
+	  node.value = (lower + (upper-lower)*(i32FeaVal-i32MinVal)*1.0/(i32MaxVal-i32MinVal))*(1<<24);
 
 		if(0 == node.value)
 		{

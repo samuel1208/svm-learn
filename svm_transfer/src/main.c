@@ -424,10 +424,10 @@ static int readTrainModel(FILE *srcFile,FILE *file_h, FILE *file_c, char *suffix
 
     //save sv_index and value    
     fprintf(file_h, "extern svm_node pSvm_node_%s[];\n", suffix);
-    fprintf(file_c, "svm_node pSvm_node_%s[] = {{%d,%.8g}", suffix, pSv_index[0], pSv_value[0]);
+    fprintf(file_c, "svm_node pSvm_node_%s[] = {{%d,%d}", suffix, pSv_index[0],(int)( pSv_value[0]*(1<<24)));
     for(i=1; i<elements; i++)
     {
-        fprintf(file_c, ", {%d,%.8g}", pSv_index[i], pSv_value[i]);
+      fprintf(file_c, ", {%d,%d}", pSv_index[i], (int)(pSv_value[i]*(1<<24)));
         if(i%100 == 0)
             fprintf(file_c, "\n");
     }

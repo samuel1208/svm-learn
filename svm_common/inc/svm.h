@@ -9,7 +9,7 @@ extern "C"{
 typedef struct __tagSvm_node
 {
 	int index;
-	double value;
+	int value;
 }svm_node;
 
 typedef struct __tagSvm_problem
@@ -31,6 +31,7 @@ typedef struct __tagSvm_parameter
 	double coef0;	/* for poly/sigmoid */
 
 	/* these are for training only */
+
 	double cache_size; /* in MB */
 	double eps;	/* stopping criteria */
 	double C;	/* for C_SVC, EPSILON_SVR and NU_SVR */
