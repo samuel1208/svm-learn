@@ -119,7 +119,7 @@ static double dot(const svm_node *px, const svm_node *py)
 	return sum;
 }
 
-svm_model* Init_svm(THandle hMemBuf, char *suffix)
+svm_model* Init_svm(THandle hMemBuf, const char *suffix)
 {
     int rVal = 0;
     

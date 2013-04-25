@@ -71,7 +71,7 @@ typedef struct __tagSvm_model
 				/* 0 if svm_model is created by svm_train */
 }svm_model;
 
-svm_model* Init_svm(THandle hMemBuf, char *suffix);
+svm_model* Init_svm(THandle hMemBuf, const char *suffix);
 void  Uninit_svm(THandle hMemBuf, svm_model ** ppModel);
 
 /* 0 - nonface  1 face */
