@@ -5,7 +5,7 @@
 #include "svm.h"
 //#include <opencv/cv.h>
 //#include <opencv/highgui.h>
-//#include <time_t.h>
+#include <Time_t.h>
 
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
@@ -116,11 +116,11 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
         goto EXIT;
 
     //predict    
-	//time_stamp(0,"svm_predict");
+     time_stamp(0,"svm_predict");
      rVal = SvmPredict(hMemBuf, pSvmModel, pFea, SVM_FEA_DIM, label);
 	 if(0 != rVal)
-		 goto EXIT;  
-	//time_stamp(1, "svm_predict");
+	     goto EXIT;  
+    time_stamp(1, "svm_predict");
 
     rVal = 0;
  EXIT:

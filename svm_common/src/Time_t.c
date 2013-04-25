@@ -26,7 +26,7 @@
 #else
     #include <sys/time.h>
     #include <unistd.h>
-    DLL_EXPORTS  MVoid  time_stamp(int is_end, const char *timeName)  
+    void  time_stamp(int is_end, const char *timeName)  
     {
         static  struct timeval  start, end;
        	if(0==is_end)

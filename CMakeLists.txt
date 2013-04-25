@@ -4,8 +4,8 @@ project(SVM_LEARN)
 
 if(UNIX)
     add_definitions(-DUNIX)
-	#find_package(OpenCV PATHS "/home/samuel/install/share" NO_DEFAULT_PATH)
-    find_package(OpenCV PATHS "/home/fshen/Install_samuel/OpenCV/OpenCV-2.4.2/Debug/share/OpenCV/" NO_DEFAULT_PATH)
+    find_package(OpenCV PATHS "/home/samuel/install/share/OpenCV" NO_DEFAULT_PATH)
+    #find_package(OpenCV PATHS "/home/fshen/Install_samuel/OpenCV/OpenCV-2.4.2/Debug/share/OpenCV/" NO_DEFAULT_PATH)
     
 	#find_package(OpenCV PATHS "/home/fshen/samuel/project_self/bow-opencv/opencv/build" NO_DEFAULT_PATH)
 elseif(WIN32)
