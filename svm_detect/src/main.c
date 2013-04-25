@@ -15,7 +15,7 @@ static svm_model *pSvmModel_face = NULL;
 
 
 int main(int argc, char **argv)
-{
+{	 
     FILE *file = NULL, *file_output=NULL;
     char image_path_name[1024] = {0}; 
     IplImage  *src_img    = NULL;

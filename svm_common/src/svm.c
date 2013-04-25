@@ -211,8 +211,8 @@ static double k_function(const svm_node *x, const svm_node *y, const svm_paramet
 				sum += y->value * y->value;
 				++y;
 			}
-			
-			return exp(-param->gamma*sum);
+			return (-param->gamma*sum);
+			//return exp(-param->gamma*sum);
 		}
 		case SIGMOID:
 			return tanh(param->gamma*dot(x,y)+param->coef0);
