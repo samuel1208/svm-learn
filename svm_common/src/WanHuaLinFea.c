@@ -91,7 +91,7 @@ int WanHuaLinColorFea(unsigned char *pHSL,  int i32LineByte, int i32Width, int i
 		}
 	}
 	
-	size = (1<<24)/((i32Height>>1)*(i32Width>>1)); //largen the feature with (1<<24)
+	size = (1<<24)/((i32Height/GAP)*(i32Width/GAP)); //largen the feature with (1<<24)
 	for(x=0; x<COLOR_BIN; x++)
 		pFea[x] = hist[x]*size;
 	

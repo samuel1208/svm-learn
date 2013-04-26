@@ -5,7 +5,7 @@
 #include "svm.h"
 //#include <opencv/cv.h>
 //#include <opencv/highgui.h>
-#include <Time_t.h>
+//#include <Time_t.h>
 
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
