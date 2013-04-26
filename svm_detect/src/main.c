@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     cvNamedWindow("test", 0);
 #endif
     
-    pSvmModel_face = Init_svm(NULL, "face");
+    pSvmModel_face = Init_svm(NULL, "gesture");
     if(NULL ==pSvmModel_face )
     {
         printf("Init svm model failed\n");
