@@ -338,7 +338,7 @@ int HogFea(THandle hMemBuf, unsigned char *grayImg, int width, int height, int *
     int block_size = 0 ;
     
     params[0]=9;
-    params[1]=8;
+    params[1]=12;
     params[2]=2;
     params[3]=0;
     params[4]=0.2f;
@@ -369,7 +369,7 @@ int HogFea(THandle hMemBuf, unsigned char *grayImg, int width, int height, int *
 static void HoG(THandle hMemBuf, unsigned char *pixels, float *params, int *img_size, double *dth_des, unsigned int grayscale){
     
     const float pi = 3.1415926536f;
-    
+#define HOG_GAP (2)
     int nb_bins       = (int) params[0];
     float cwidth     =  params[1];
     int block_size    = (int) params[2];
@@ -408,8 +408,8 @@ static void HoG(THandle hMemBuf, unsigned char *pixels, float *params, int *img_
     //Calculate gradients (zero padding)
    // FILE *file = fopen("./Hig.txt", "w");
     
-    for(y=0; y<img_height; y++) {
-        for(x=0; x<img_width; x++) {
+    for(y=0; y<img_height; y+=HOG_GAP) {
+        for(x=0; x<img_width; x+=HOG_GAP) {
             if (grayscale == 1){
                 if(x==0) dx[0] = pixels[y +(x+1)*img_height];
                 else{

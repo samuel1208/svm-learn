@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <locale.h>
 
 static const char *svm_type_table[] =
@@ -452,9 +453,11 @@ int main(int argc, char **argv)
     int rVal = 0;
     FILE *maxMinFile=NULL, *trainModelFile=NULL;
     FILE *saveFile_h = NULL, *saveFile_c = NULL;
-    char *savePath_c = "./svm_constant.c";
-    char *savePath_h = "./svm_constant.h";
+    char savePath_c[1024] = {0};
+    char savePath_h[1024] = {0};
     char lineStr[1024];
+    char upperSuffix[20] = {0};
+    int i=0;
     if (argc<4)
     {
         printf("---------------------------------------------------------\n");
@@ -465,6 +468,8 @@ int main(int argc, char **argv)
         goto EXIT;
     }    
 
+    sprintf(savePath_c, "../../svm_common/src/svm_constant_%s.c", argv[3]);
+    sprintf(savePath_h, "../../svm_common/inc/svm_constant_%s.h", argv[3]);
     saveFile_h = fopen(savePath_h, "w");
     saveFile_c = fopen(savePath_c, "w");
     if(NULL == saveFile_h || NULL== saveFile_c)
@@ -474,10 +479,15 @@ int main(int argc, char **argv)
         goto EXIT;
     }
 
-    fprintf(saveFile_h, "#ifndef  __SVM_TRAIN_MODEL_H__\n");
-    fprintf(saveFile_h, "#define  __SVM_TRAIN_MODEL_H__\n\n");
+    sprintf(upperSuffix, "%s", argv[3]);
+    for(i=0; i<strlen(argv[3]); i++)
+        upperSuffix[i] = toupper(argv[3][i]);
+    upperSuffix[i] = '\0';
+
+    fprintf(saveFile_h, "#ifndef  __SVM_CONSTANT_%s_H__\n", upperSuffix);
+    fprintf(saveFile_h, "#define  __SVM_CONSTANT_%s_H__\n\n", upperSuffix);
     fprintf(saveFile_h, "#include \"svm.h\"\n");
-	fprintf(saveFile_c, "\n#include \"svm_constant.h\"\n\n");
+    fprintf(saveFile_c, "\n#include \"svm_constant_%s.h\"\n\n", argv[3]);
 
     //process the min and max file
     maxMinFile = fopen(argv[1], "r");

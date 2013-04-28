@@ -28,19 +28,19 @@ int main(int argc, char **argv)
     {
         printf("\n******************************************************\n");
         printf("usage:\n");
-        printf("svm-detector input  output\n");
+        printf("svm-detector model  input output \n");
         printf("******************************************************\n\n");
         goto EXIT;
     }
 
-    file = fopen(argv[1], "r");
+    file = fopen(argv[2], "r");
     if(NULL == file)
     {
         printf("ERROR :: The input file not exist\n");
         goto EXIT;
     }
 
-    file_output = fopen(argv[2], "w");
+    file_output = fopen(argv[3], "w");
     if(NULL == file_output)
     {
         printf("ERROR :: The out file not exist\n");
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     cvNamedWindow("test", 0);
 #endif
     
-    pSvmModel_face = Init_svm(NULL, "gesture");
+    pSvmModel_face = Init_svm(NULL, argv[1]);
     if(NULL ==pSvmModel_face )
     {
         printf("Init svm model failed\n");

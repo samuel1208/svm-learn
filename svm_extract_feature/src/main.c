@@ -10,8 +10,8 @@
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
 
-#define HOG_DIM  (900)
-#define WAN_DIM  (73)
+#define HOG_DIM  (((IMG_WIDTH/12)-1)*((IMG_WIDTH/12)-1)*4*9)
+#define WAN_DIM  (0)//(73)
 #define FEA_DIM  (HOG_DIM+WAN_DIM)
 //#define SHOW_IMG
 
@@ -147,13 +147,13 @@ int main(int argc, char **argv)
             printf("ERROR :: Error occured in RGB2HSL\n ");
             continue;
         } 
-        
+	/* 
         if(0 != WanHuaLinColorFea(hsl_img->imageData, hsl_img->widthStep, IMG_WIDTH, IMG_HEIGHT,pFea))
         {
             printf("ERROR :: Error occured in extracting WanHuaLin feature\n ");
             continue;
         }
-
+	*/
         // extract HOG feature	
         HogFea(NULL, gray_img->imageData, gray_img->width, gray_img->height,pFea+WAN_DIM);
 

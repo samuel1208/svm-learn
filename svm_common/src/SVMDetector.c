@@ -10,8 +10,8 @@
 #define IMG_WIDTH  48
 #define IMG_HEIGHT 48
 
-#define HOG_DIM  (900)
-#define WAN_DIM  (73)
+#define HOG_DIM  (((IMG_WIDTH/12)-1)*((IMG_WIDTH/12)-1)*4*9)
+#define WAN_DIM  (0)//(73)
 #define SVM_FEA_DIM  (HOG_DIM+WAN_DIM)
 
 int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,TRECT region, int *label)
@@ -106,9 +106,9 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
         goto EXIT;
 
     //get wan feature : fast sample by setp 2 
-    rVal = WanHuaLinColorFea(pHSL, IMG_WIDTH*3, IMG_WIDTH,  IMG_HEIGHT, pFea);
-    if(0 != rVal)
-        goto EXIT;
+    // rVal = WanHuaLinColorFea(pHSL, IMG_WIDTH*3, IMG_WIDTH,  IMG_HEIGHT, pFea);
+    // if(0 != rVal)
+    //    goto EXIT;
 
     // get Hog Fea : 0-180
     rVal =  HogFea(hMemBuf, pGray, IMG_WIDTH,  IMG_HEIGHT, pFea+WAN_DIM);
