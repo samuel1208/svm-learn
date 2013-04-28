@@ -487,6 +487,12 @@ int main(int argc, char **argv)
     fprintf(saveFile_h, "#ifndef  __SVM_CONSTANT_%s_H__\n", upperSuffix);
     fprintf(saveFile_h, "#define  __SVM_CONSTANT_%s_H__\n\n", upperSuffix);
     fprintf(saveFile_h, "#include \"svm.h\"\n");
+    
+    fprintf(saveFile_h, "\n#ifdef __cplusplus\n");
+    fprintf(saveFile_h, "extern \"C\" {\n");
+    fprintf(saveFile_h, "#endif\n");
+
+
     fprintf(saveFile_c, "\n#include \"svm_constant_%s.h\"\n\n", argv[3]);
 
     //process the min and max file
@@ -519,6 +525,10 @@ int main(int argc, char **argv)
         rVal = -1;
         goto EXIT;
     }
+
+    fprintf(saveFile_h, "\n#ifdef __cplusplus\n");
+    fprintf(saveFile_h, "}  \n");
+    fprintf(saveFile_h, "#endif\n");
     fprintf(saveFile_h, "\n#endif\n");
 
     rVal = 0;

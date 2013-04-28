@@ -2,6 +2,10 @@
 #define  __SVM_CONSTANT_SMILE_H__
 
 #include "svm.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int i32MinRange_smile;
 extern int i32MaxRange_smile;
 extern int pMinMaxFeaVal_smile[];
@@ -20,5 +24,9 @@ extern double *pProbB_smile;
 extern double pCoef_smile[];
 extern svm_node pSvm_node_smile[];
 extern int free_sv_smile;
+
+#ifdef __cplusplus
+}  
+#endif
 
 #endif

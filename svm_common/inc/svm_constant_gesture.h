@@ -2,6 +2,10 @@
 #define  __SVM_CONSTANT_GESTURE_H__
 
 #include "svm.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int i32MinRange_gesture;
 extern int i32MaxRange_gesture;
 extern int pMinMaxFeaVal_gesture[];
@@ -20,5 +24,9 @@ extern double *pProbB_gesture;
 extern double pCoef_gesture[];
 extern svm_node pSvm_node_gesture[];
 extern int free_sv_gesture;
+
+#ifdef __cplusplus
+}  
+#endif
 
 #endif

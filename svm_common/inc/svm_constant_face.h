@@ -2,6 +2,10 @@
 #define  __SVM_CONSTANT_FACE_H__
 
 #include "svm.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int i32MinRange_face;
 extern int i32MaxRange_face;
 extern int pMinMaxFeaVal_face[];
@@ -20,5 +24,9 @@ extern double *pProbB_face;
 extern double pCoef_face[];
 extern svm_node pSvm_node_face[];
 extern int free_sv_face;
+
+#ifdef __cplusplus
+}  
+#endif
 
 #endif
