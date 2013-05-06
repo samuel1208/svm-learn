@@ -83,43 +83,8 @@ INIT_SVM_FUNC(smile);
 static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower, int upper, int feaLen);
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x);
 static double __svm_predict_values(THandle hMemBuf, const svm_model *model, const svm_node *x, double* dec_values);
-static double k_function(const svm_node *x, const svm_node *y, const svm_parameter* param);
-static double dot(const svm_node *px, const svm_node *py);
-static double powi(double base, int times);
+static double _kFunction(const svm_node *x, const svm_node *y, const svm_parameter* param);
 
-static double powi(double base, int times)
-{
-	double tmp = base, ret = 1.0;
-    int t;
-
-	for(t=times; t>0; t/=2)
-	{
-		if(t%2==1) ret*=tmp;
-		tmp = tmp * tmp;
-	}
-	return ret;
-}
-static double dot(const svm_node *px, const svm_node *py)
-{
-	double sum = 0;
-	while(px->index != -1 && py->index != -1)
-	{
-		if(px->index == py->index)
-		{
-			sum += px->value * py->value;
-			++px;
-			++py;
-		}
-		else
-		{
-			if(px->index > py->index)
-				++py;
-			else
-				++px;
-		}			
-	}
-	return sum;
-}
 
 svm_model* Init_svm(THandle hMemBuf, const char *suffix)
 {
@@ -157,8 +122,9 @@ void  Uninit_svm(THandle hMemBuf, svm_model ** ppModel)
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x)
 {
 	int nr_class = model->nr_class;
-	double *dec_values;
     double pred_result;
+	double *dec_values;
+    
 	if(model->param.svm_type == ONE_CLASS ||
 	   model->param.svm_type == EPSILON_SVR ||
 	   model->param.svm_type == NU_SVR)
@@ -172,7 +138,7 @@ static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_n
 }
 
 
-static double k_function(const svm_node *x, const svm_node *y, const svm_parameter* param)
+static double _kFunction(const svm_node *x, const svm_node *y, const svm_parameter* param)
 {
 	switch(param->kernel_type)
 	{
@@ -193,14 +159,14 @@ static double k_function(const svm_node *x, const svm_node *y, const svm_paramet
 				{
 					if(x->index > y->index)
 					{	
-						d = y->value;// chang value to long  avoid  overflow
-					  sum += ((d * d)>>SVM_BIT_MOVE);
+						d = y->value;
+                        sum += ((d * d)>>SVM_BIT_MOVE);
 						++y;
 					}
 					else
 					{
 						d = x->value;
-					  sum += ((d * d)>>SVM_BIT_MOVE);
+                        sum += ((d * d)>>SVM_BIT_MOVE);
 						++x;
 					}
 				}
@@ -222,68 +188,11 @@ static double k_function(const svm_node *x, const svm_node *y, const svm_paramet
 			return exp((-param->gamma*sum)/(1<<SVM_BIT_MOVE));
 		}
 		default:
-			return 0;  // Unreachable 
+			return 0;  
 	}
 }
 
-/*
-static double k_function(const svm_node *x, const svm_node *y, const svm_parameter* param)
-{
-	switch(param->kernel_type)
-	{
-		case LINEAR:
-			return dot(x,y);
-		case POLY:
-			return powi(param->gamma*dot(x,y)+param->coef0,param->degree);
-		case RBF:
-		{
-			double sum = 0;
-			while(x->index != -1 && y->index !=-1)
-			{
-				if(x->index == y->index)
-				{
-					double d = x->value - y->value;
-					sum += d*d;
-					++x;
-					++y;
-				}
-				else
-				{
-					if(x->index > y->index)
-					{	
-						sum += y->value * y->value;
-						++y;
-					}
-					else
-					{
-						sum += x->value * x->value;
-						++x;
-					}
-				}
-			}
 
-			while(x->index != -1)
-			{
-				sum += x->value * x->value;
-				++x;
-			}
-
-			while(y->index != -1)
-			{
-				sum += y->value * y->value;
-				++y;
-			}
-			return exp(-param->gamma*sum);
-		}
-		case SIGMOID:
-			return tanh(param->gamma*dot(x,y)+param->coef0);
-		case PRECOMPUTED:  //x: test (validation), y: SV
-			return x[(int)(y->value)].value;
-		default:
-			return 0;  // Unreachable 
-	}
-}
-*/
 static double __svm_predict_values(THandle hMemBuf, const svm_model *model, const svm_node *x, double* dec_values)
 {
 	int i;
@@ -294,7 +203,7 @@ static double __svm_predict_values(THandle hMemBuf, const svm_model *model, cons
 		double *sv_coef = model->sv_coef[0];
 		double sum = 0;
 		for(i=0;i<model->l;i++)
-			sum += sv_coef[i] * k_function(x,model->SV[i],&model->param);
+			sum += sv_coef[i] * _kFunction(x,model->SV[i],&model->param);
 		sum -= model->rho[0];
 		*dec_values = sum;
 
@@ -315,7 +224,7 @@ static double __svm_predict_values(THandle hMemBuf, const svm_model *model, cons
 
         kvalue =  TMemAlloc(hMemBuf, sizeof(double)*l);
 		for(i=0;i<l;i++)
-			kvalue[i] = k_function(x,model->SV[i],&model->param);
+			kvalue[i] = _kFunction(x,model->SV[i],&model->param);
 
 		start = TMemAlloc(hMemBuf, sizeof(int)*nr_class);
 		start[0] = 0;
@@ -432,21 +341,6 @@ int   SvmPredict(THandle hMemBuf, svm_model *pSvmModel, int *pFea, int feaLen, i
     rVal = __featureScale(pFea, pNode, pMinMaxFeaVal, feaLower, feaUpper, feaLen);
     if(0 != rVal)
         goto EXIT;
-
-	//{
-	//	FILE *tmp = fopen("../bin/scal_fea.txt", "w");
-	//	int i=0;
-	//	fprintf(tmp, "%d ", 1);
- //       for(i=0; i<973; i++)
- //       {
-	//		if(-1 ==pNode[i].index)
-	//			break;
- //           fprintf(tmp, "%d:%g ", pNode[i].index, pNode[i].value);
-	//		
- //       }
- //       fprintf(tmp,"\n");
-	//	fclose(tmp);			
-	//}
 
     *label = (int)__svm_predict(hMemBuf, pSvmModel,pNode);
 

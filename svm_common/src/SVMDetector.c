@@ -96,24 +96,25 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidt
 	}*/
 
 	// convert to HSL
-    rVal = BGRtoHSL(pBGR_scale, pHSL, IMG_HEIGHT, IMG_WIDTH, scaleWidthStep, IMG_WIDTH*3);
-    if(0 != rVal)
-        goto EXIT;
-
-    // convert to gray
-    rVal = BGRtoGray(pBGR_scale, IMG_WIDTH, IMG_HEIGHT, scaleWidthStep, pGray);
-    if(0 != rVal)
-        goto EXIT;
+    // rVal = BGRtoHSL(pBGR_scale, pHSL, IMG_HEIGHT, IMG_WIDTH, scaleWidthStep, IMG_WIDTH*3);
+    //if(0 != rVal)
+    //  goto EXIT;
 
     //get wan feature : fast sample by setp 2 
     // rVal = WanHuaLinColorFea(pHSL, IMG_WIDTH*3, IMG_WIDTH,  IMG_HEIGHT, pFea);
     // if(0 != rVal)
     //    goto EXIT;
 
-    // get Hog Fea : 0-180
-    rVal =  HogFea(hMemBuf, pGray, IMG_WIDTH,  IMG_HEIGHT, pFea+WAN_DIM);
-	if(0 != rVal)
+    // convert to gray
+    rVal = BGRtoGray(pBGR_scale, IMG_WIDTH, IMG_HEIGHT, scaleWidthStep, pGray);
+    if(0 != rVal)
         goto EXIT;
+    // get Hog Fea : 0-180
+    if(HOG_DIM !=  HogFea(hMemBuf, pGray, IMG_WIDTH,  IMG_HEIGHT, pFea+WAN_DIM))
+    { 
+        rVal = -1;
+        goto EXIT;
+    }
 
     //predict    
     // time_stamp(0,"svm_predict");

@@ -164,13 +164,13 @@ int main(int argc, char **argv)
 		//	fclose(tmp);
 		//}
         
-        if(0 != GetGradient(gray_img->imageData, gray_img->widthStep,          
-                            pGradient_x, pGradient_y,gray_img->widthStep,
-                            gray_img->width, gray_img->height, GRADIENT_SIMPLE))
-        {
-            printf("ERROR :: Error occured in GetGradient\n");
-            continue;
-        }
+        //  if(0 != GetGradient(gray_img->imageData, gray_img->widthStep,
+        //                    pGradient_x, pGradient_y,gray_img->widthStep,
+        //                    gray_img->width, gray_img->height, GRADIENT_SIMPLE))
+        //  {
+        //     printf("ERROR :: Error occured in GetGradient\n");
+        //     continue;
+        // }
         
         //save to file
         fprintf(file_save, "%d ", label);

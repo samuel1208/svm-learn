@@ -12,63 +12,35 @@ typedef struct __tagSvm_node
 	int value;
 }svm_node;
 
-typedef struct __tagSvm_problem
-{
-	int l;
-	double *y;
-	svm_node **x;
-}svm_problem;
-
 enum { C_SVC, NU_SVC, ONE_CLASS, EPSILON_SVR, NU_SVR };	/* svm_type */
 enum { LINEAR, POLY, RBF, SIGMOID, PRECOMPUTED }; /* kernel_type */
 
 typedef struct __tagSvm_parameter
 {
+    int kernel_type;
+    int degree;
 	int svm_type;
-	int kernel_type;
-	int degree;	/* for poly */
-	double gamma;	/* for poly/rbf/sigmoid */
-	double coef0;	/* for poly/sigmoid */
-
-	/* these are for training only */
-
-	double cache_size; /* in MB */
-	double eps;	/* stopping criteria */
-	double C;	/* for C_SVC, EPSILON_SVR and NU_SVR */
-	int nr_weight;		/* for C_SVC */
-	int *weight_label;	/* for C_SVC */
-	double* weight;		/* for C_SVC */
-	double nu;	/* for NU_SVC, ONE_CLASS, and NU_SVR */
-	double p;	/* for EPSILON_SVR */
-	int shrinking;	/* use the shrinking heuristics */
-	int probability; /* do probability estimates */
+	double coef0;		
+	double gamma;			
 }svm_parameter;
 
-//
-// svm_model
-// 
+
 typedef struct __tagSvm_model
-{
-	svm_parameter param;	/* parameter */
-	int nr_class;		/* number of classes, = 2 in regression/one class svm */
-	int l;			/* total #SV */
-	svm_node **SV;		/* SVs (SV[l]) */
-	double **sv_coef;	/* coefficients for SVs in decision functions (sv_coef[k-1][l]) */
-	double *rho;		/* constants in decision functions (rho[k*(k-1)/2]) */
-	double *probA;		/* pariwise probability information */
-	double *probB;
-
-	/* for classification only */
-
-	int *label;		/* label of each class (label[k]) */
-	int *nSV;		/* number of SVs for each class (nSV[k]) */
-				/* nSV[0] + nSV[1] + ... + nSV[k-1] = l */
-	/* XXX */
-	int free_sv;		/* 1 if svm_model is created by svm_load_model*/
+{		
+	int nr_class;		
+	int l;		
+    double *rho;
+    double *probB;
+    double *probA;
+	svm_node **SV;		
+	double **sv_coef;		
+	int *label;	
+	int *nSV;						
+	int free_sv;	
     int *pMinMaxFeaVal;
     int feaLower;
-    int feaUpper;
-				/* 0 if svm_model is created by svm_train */
+    int feaUpper;	
+    svm_parameter param;
 }svm_model;
 
 svm_model* Init_svm(THandle hMemBuf, const char *suffix);
