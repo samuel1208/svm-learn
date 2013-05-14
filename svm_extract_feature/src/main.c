@@ -7,6 +7,7 @@
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
 #include "svm_config.h"
+#include "svm_feature.h"
 //#define SHOW_IMG
 
 #ifdef SHOW_IMG
@@ -55,7 +56,12 @@ int main(int argc, char **argv)
     IplImage  *gray_img   = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,1);
     IplImage  *gradient_img = cvCreateImage(cvSize(resize_img->width, resize_img->height),8 ,1);
     int *pGradient_x=NULL, *pGradient_y=NULL, *pGradient=NULL;
-    int *pFea = (int *)malloc(SVM_FEA_DIM * sizeof(int));
+    
+    int fea_used_num = 0;
+    int *pFea_tmp, *pFea = (int *)malloc((WAN_HUA_LIN_DIM + HOG_DIM + LBP_DIM_8 + LBP_DIM_16 ) * sizeof(int));
+    // int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_8 | FEAT_LBP_16;
+    // int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_16;
+    int feaUsed = FEAT_LBP_16;
     int i,img_num=0;
 
     pGradient_x = (int *)malloc(resize_img->width*resize_img->height* sizeof(int));
@@ -99,12 +105,32 @@ int main(int argc, char **argv)
         goto EXIT;
     }
 
+    fea_used_num = 0;
     printf("---------------------------------------------\n");
-    printf("The total feature dim: %d\n", SVM_FEA_DIM);
-    printf("\t WanHuaLin dim: %d\n", WAN_HUA_LIN_DIM);
-    printf("\t HOG dim      : %d\n", HOG_DIM);
-    printf("\t LBP dim: 8_neighbor=%d, 16_neighbor=%d\n", LBP_DIM_8, LBP_DIM_16);
+    printf("The feature info: \n");
+    if(feaUsed & FEAT_WAN_COLOR)
+    {
+        printf("\t WanHuaLin dim: used %d\n", WAN_HUA_LIN_DIM);
+        fea_used_num += WAN_HUA_LIN_DIM;
+    }
+    if(feaUsed & FEAT_HOG)
+    {
+        printf("\t HOG dim      : used %d\n", HOG_DIM);
+        fea_used_num += HOG_DIM;
+    }
+    if(feaUsed & FEAT_LBP_8)
+    {
+        printf("\t LBP_8 dim    : used %d\n", LBP_DIM_8);
+        fea_used_num += LBP_DIM_8;
+    }
+    if(feaUsed & FEAT_LBP_16)
+    {
+        printf("\t LBP_16 dim   : used %d\n", LBP_DIM_16);
+        fea_used_num += LBP_DIM_16;
+    }
+    printf("\t Total Dim    :      %d\n", fea_used_num);
     printf("---------------------------------------------\n");
+
 #ifdef SHOW_IMG
     cvNamedWindow("test", 0);
 #endif
@@ -135,38 +161,47 @@ int main(int argc, char **argv)
             memcpy(resize_img->imageData, __src_img->imageData, resize_img->width*resize_img->height*3);
 
         cvCvtColor(resize_img, gray_img, CV_RGB2GRAY);
-        
-        // extract WanHuaLin feature
-        if(0 != RGBtoHSL(resize_img->imageData, hsl_img->imageData,resize_img->height,resize_img->width,resize_img->widthStep, hsl_img->widthStep))
-        {
-            printf("ERROR :: Error occured in RGB2HSL\n ");
-            continue;
-        } 
+       
 
-#ifdef WAN_HUA_LIN_ENABLE	
-        if(0 != WanHuaLinColorFea(hsl_img->imageData, hsl_img->widthStep, IMG_WIDTH, IMG_HEIGHT,pFea))
+        pFea_tmp = pFea;
+
+        if(feaUsed & FEAT_WAN_COLOR)
         {
-            printf("ERROR :: Error occured in extracting WanHuaLin feature\n ");
-            continue;
+                    // extract WanHuaLin feature
+            if(0 != RGBtoHSL(resize_img->imageData, hsl_img->imageData,resize_img->height,resize_img->width,resize_img->widthStep, hsl_img->widthStep))
+            {
+                printf("ERROR :: Error occured in RGB2HSL\n ");
+                continue;
+            } 
+
+            if(0 != WanHuaLinColorFea(hsl_img->imageData, hsl_img->widthStep, IMG_WIDTH, IMG_HEIGHT,pFea))
+            {
+                printf("ERROR :: Error occured in extracting WanHuaLin feature\n ");
+                continue;
+            }
+            pFea_tmp += WAN_HUA_LIN_DIM;
         }
-#endif
         // extract HOG feature	
-#ifdef HOG_ENABLE
-        if(HOG_DIM != HogFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea+WAN_HUA_LIN_DIM))
+        if(feaUsed & FEAT_HOG)
         {
-            printf("ERROR :: Error occured in extracting HOG feature\n ");
-            continue;
+            if(HOG_DIM != HogFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea_tmp))
+            {
+                printf("ERROR :: Error occured in extracting HOG feature\n ");
+                continue;
+            }
+            pFea_tmp += HOG_DIM;
         }
-#endif
 
-#ifdef LBP_ENABLE
-        if(LBP_DIM_16 != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
-                                  LBP_RADIUS_2, LBP_NEIGHBOR_16, LBP_GRID_X, LBP_GRID_Y, pFea+WAN_HUA_LIN_DIM+HOG_DIM))
+        if(feaUsed & FEAT_LBP_16)
         {
-            printf("ERROR :: Error occured in extracting LBP feature\n ");
-            continue;   
-        } 
-#endif
+            if(LBP_DIM_16 != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
+                                      LBP_RADIUS_2, LBP_NEIGHBOR_16, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
+            {
+                printf("ERROR :: Error occured in extracting LBP feature\n ");
+                continue;   
+            } 
+            pFea_tmp += LBP_DIM_16;
+        }
 		//{
 		//	FILE *tmp = fopen("../bin/tmp.txt","wb");
 		//	fwrite(hsl_img->imageData, 1,hsl_img->widthStep*hsl_img->height, tmp );
@@ -184,7 +219,7 @@ int main(int argc, char **argv)
         
         //save to file
         fprintf(file_save, "%d ", label);
-        for(i=0; i<SVM_FEA_DIM; i++)
+        for(i=0; i<fea_used_num; i++)
         {
             fprintf(file_save, "%d:%d ", i+1, pFea[i]);
         }

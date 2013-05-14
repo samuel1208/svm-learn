@@ -37,8 +37,5 @@
     #define LBP_MAX_RADIUS (0)
 #endif
 
-#define SVM_FEA_DIM (HOG_DIM + WAN_HUA_LIN_DIM + LBP_DIM_16)
-
-
 
 #endif

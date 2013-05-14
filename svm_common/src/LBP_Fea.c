@@ -7,62 +7,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
-
-
-void LBP_cv(unsigned char * _src, int*  _dst, int width, int height, int radius, int neighbors) 
-{
-    const float pi = 3.141593f;
-    int n, i, j;
-    unsigned char val;
-    char *pLookupTable = TNull;
-    int width_lbp, height_lbp;
-    
-    width_lbp = width - 2*LBP_MAX_RADIUS;
-    height_lbp = height - 2*LBP_MAX_RADIUS;
-    TMemSet(_dst, 0, width_lbp*height_lbp *sizeof(int));
-    for(n=0; n<neighbors; n++) {
-        // sample points
-        float x = (float)(-radius * sin(2.0*pi*n/(float)(neighbors)));
-        float y = (float)(radius * cos(2.0*pi*n/(float)(neighbors)));
-        // relative indices
-        int fx = (int)(floor(x));
-        int fy = (int)(floor(y));
-        int cx = (int)(ceil(x));
-        int cy = (int)(ceil(y));
-        // fractional part
-        float ty = y - fy;
-        float tx = x - fx;
-        // set interpolation weights
-        float w1 = (1 - tx) * (1 - ty);
-        float w2 =      tx  * (1 - ty);
-        float w3 = (1 - tx) *      ty;
-        float w4 =      tx  *      ty;
-        // iterate through your data
-        for(i=LBP_MAX_RADIUS; i < height-LBP_MAX_RADIUS;i++) {
-            for(j=LBP_MAX_RADIUS;j < width-LBP_MAX_RADIUS;j++) {
-                val = _src[i*width+j];
-                // calculate interpolated value
-                float t = (float)(w1*_src[(i+fy)*width+j+fx] + w2*_src[(i+fy)*width+j+cx] + w3*_src[(i+cy)*width+j+fx] + w4*_src[(i+cy)*width+j+cx]);
-                // floating point precision, so check some machine-dependent epsilon
-                // _dst(i*width+j) += ((t > val) || (std::abs(t-val) < std::numeric_limits<float>::epsilon())) << n;
-                _dst[(i-LBP_MAX_RADIUS)*width_lbp+(j-LBP_MAX_RADIUS)] += ((t > val)|| (fabs(t-val)<0.0000001f)) << n;
-            }
-        }
-    }
-    
-    if(8 == neighbors)
-        pLookupTable = pLBP_lookUP_table_8;
-	else if(16 == neighbors)
-        pLookupTable = pLBP_lookUP_table_16;
-    for(i=0; i < height_lbp; i++) {
-        for(j=0; j < width_lbp; j++) {
-            _dst[i*width_lbp+j] = pLookupTable[_dst[i*width_lbp+j]];
-        }
-    }
-    
-}
-
-
 static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height, 
                      int *pLBPImg,  int width_lbp, int height_lbp, int radius, int neighbor)
 {
@@ -85,7 +29,7 @@ static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height,
 
     TMemSet(pLBPImg, 0, width_lbp*height_lbp*sizeof(int));
     
-    pSrc = pImg + radius * widthStep;
+    pSrc = pImg + LBP_MAX_RADIUS * widthStep;
     pDst = pLBPImg;
     
     for(h=LBP_MAX_RADIUS; h<height-LBP_MAX_RADIUS; h++)
@@ -108,13 +52,21 @@ static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height,
                 int x2 = x1+1;
                 int y2 = y1+1;
                 unsigned char v1, v2, v3, v4;
+                float w1,w2,w3,w4;
                 v1 = pImg[y1*widthStep + x1];
                 v2 = pImg[y1*widthStep + x2];
                 v3 = pImg[y2*widthStep + x1];
                 v4 = pImg[y2*widthStep + x2];
-                val_f = (1-fc_y)*((1-fc_x)*v1 + fc_x*v2) + fc_y*((1-fc_x)*v2 + fc_x*v2);
 
-                val_lbp += ((val_f>=val_c) || (fabs(val_f-val_c)<0.0000001f))<<n;                 
+                w1 = (1-fc_y)*(1-fc_x);
+                w2 = (1-fc_y)*fc_x;
+                w3 = fc_y*(1-fc_x);
+                w4 = (fc_y*fc_x);
+                
+                //val_f = w1*v1 + w2*v2 + w3*v3 + w4*v4;
+                val_f = (1-fc_y)*((1-fc_x)*v1 + fc_x*v2) + fc_y*((1-fc_x)*v3 + fc_x*v4);
+
+                val_lbp += ((val_f>val_c) || (fabs(val_f-val_c)<0.0000001f))<<n;                 
             }
             
             // get the min val
@@ -162,10 +114,16 @@ int LBPH_Fea(THandle hMem, unsigned char *pSrcImg, int widthStep,
     
     int *pLBPImg = TNull;
     if((TNull == pSrcImg) || (TNull == pFea))
-        return nFeaNum;
+    {
+           nFeaNum = 0;
+           goto EXIT;
+    }
 
     if((grid_x<1)||(grid_x>width) || (grid_y<1) || (grid_y>height))
-        return nFeaNum;
+    {
+           nFeaNum = 0;
+           goto EXIT;
+    }
 
     width_lbp = width - 2*LBP_MAX_RADIUS;
     height_lbp = height - 2*LBP_MAX_RADIUS;
@@ -176,16 +134,14 @@ int LBPH_Fea(THandle hMem, unsigned char *pSrcImg, int widthStep,
         goto EXIT;
     }
         
-    /*  if( 0 != getLBPImg(pSrcImg, widthStep, width, height,
-                           pLBPImg, width_lbp, height_lbp, radius, neighbor)) */
-    /* { */
-    /*        nFeaNum = 0; */
-    /*        goto EXIT; */
-    /* } */
+     if( 0 != getLBPImg(pSrcImg, widthStep, width, height,
+                           pLBPImg, width_lbp, height_lbp, radius, neighbor))
+    {
+           nFeaNum = 0;
+           goto EXIT;
+    }
     
-    LBP_cv(pSrcImg, pLBPImg, width, height, radius,  neighbor) ;
-
-    /*      
+     /*      
 	{	
         int _i, _j;
 		IplImage  *tmp_lbp  = cvCreateImage(cvSize(width_lbp, height_lbp), 8, 1);
