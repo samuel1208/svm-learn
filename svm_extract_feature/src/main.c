@@ -6,13 +6,7 @@
 #include <opencv/highgui.h>
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
-
-#define IMG_WIDTH  48
-#define IMG_HEIGHT 48
-
-#define HOG_DIM  (((IMG_WIDTH/12)-1)*((IMG_WIDTH/12)-1)*4*9)
-#define WAN_DIM  (0)//(73)
-#define FEA_DIM  (HOG_DIM+WAN_DIM)
+#include "svm_config.h"
 //#define SHOW_IMG
 
 #ifdef SHOW_IMG
@@ -56,17 +50,17 @@ int main(int argc, char **argv)
 
     IplImage  *src_img    = NULL;
     IplImage  *__src_img = NULL;
-    IplImage  *resize_img = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT), 8,3);
-    IplImage  *hsl_img    = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT), 8,3);
-    IplImage  *gray_img   = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT), 8,1);
-    IplImage  *gradient_img = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT),8 ,1);
+    IplImage  *resize_img = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT),8,3);
+    IplImage  *hsl_img    = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,3);
+    IplImage  *gray_img   = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,1);
+    IplImage  *gradient_img = cvCreateImage(cvSize(resize_img->width, resize_img->height),8 ,1);
     int *pGradient_x=NULL, *pGradient_y=NULL, *pGradient=NULL;
-    int *pFea = (int *)malloc(FEA_DIM * sizeof(int));
+    int *pFea = (int *)malloc(SVM_FEA_DIM * sizeof(int));
     int i,img_num=0;
 
-    pGradient_x = (int *)malloc(IMG_WIDTH*IMG_HEIGHT* sizeof(int));
-    pGradient_y = (int *)malloc(IMG_WIDTH*IMG_HEIGHT* sizeof(int));
-    pGradient   = (int *)malloc(IMG_WIDTH*IMG_HEIGHT* sizeof(int));
+    pGradient_x = (int *)malloc(resize_img->width*resize_img->height* sizeof(int));
+    pGradient_y = (int *)malloc(resize_img->width*resize_img->height* sizeof(int));
+    pGradient   = (int *)malloc(resize_img->width*resize_img->height* sizeof(int));
 
     if((NULL == pFea) || (NULL == hsl_img) || (NULL == resize_img)
        ||(NULL == pGradient_x) || (NULL == pGradient_y) || (NULL == pGradient))
@@ -105,7 +99,12 @@ int main(int argc, char **argv)
         goto EXIT;
     }
 
-
+    printf("---------------------------------------------\n");
+    printf("The total feature dim: %d\n", SVM_FEA_DIM);
+    printf("\t WanHuaLin dim: %d\n", WAN_HUA_LIN_DIM);
+    printf("\t HOG dim      : %d\n", HOG_DIM);
+    printf("\t LBP dim: 8_neighbor=%d, 16_neighbor=%d\n", LBP_DIM_8, LBP_DIM_16);
+    printf("---------------------------------------------\n");
 #ifdef SHOW_IMG
     cvNamedWindow("test", 0);
 #endif
@@ -130,33 +129,44 @@ int main(int argc, char **argv)
         else
             memcpy(__src_img->imageData, src_img->imageData, src_img->widthStep*src_img->height);        
             
-        if((IMG_WIDTH != src_img->width) || (IMG_HEIGHT != src_img->height))
+        if((resize_img->width != src_img->width) || (resize_img->height != src_img->height))
             cvResize(__src_img, resize_img, CV_INTER_NN);
         else
-            memcpy(resize_img->imageData, __src_img->imageData, IMG_WIDTH*IMG_HEIGHT*3);
-		//{
-		//	FILE *tmp = fopen("../bin/resize_img.txt","wb");
-		//	fwrite(resize_img->imageData, 1,resize_img->widthStep*resize_img->height, tmp );
-		//	fclose(tmp);
-		//}
+            memcpy(resize_img->imageData, __src_img->imageData, resize_img->width*resize_img->height*3);
 
         cvCvtColor(resize_img, gray_img, CV_RGB2GRAY);
-	// extract WanHuaLin feature
-        if(0 != RGBtoHSL(resize_img->imageData, hsl_img->imageData,IMG_HEIGHT, IMG_WIDTH,resize_img->widthStep, hsl_img->widthStep))
+        
+        // extract WanHuaLin feature
+        if(0 != RGBtoHSL(resize_img->imageData, hsl_img->imageData,resize_img->height,resize_img->width,resize_img->widthStep, hsl_img->widthStep))
         {
             printf("ERROR :: Error occured in RGB2HSL\n ");
             continue;
         } 
-	/* 
+
+#ifdef WAN_HUA_LIN_ENABLE	
         if(0 != WanHuaLinColorFea(hsl_img->imageData, hsl_img->widthStep, IMG_WIDTH, IMG_HEIGHT,pFea))
         {
             printf("ERROR :: Error occured in extracting WanHuaLin feature\n ");
             continue;
         }
-	*/
+#endif
         // extract HOG feature	
-        HogFea(NULL, gray_img->imageData, gray_img->width, gray_img->height,pFea+WAN_DIM);
+#ifdef HOG_ENABLE
+        if(HOG_DIM != HogFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea+WAN_HUA_LIN_DIM))
+        {
+            printf("ERROR :: Error occured in extracting HOG feature\n ");
+            continue;
+        }
+#endif
 
+#ifdef LBP_ENABLE
+        if(LBP_DIM_16 != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
+                                  LBP_RADIUS_2, LBP_NEIGHBOR_16, LBP_GRID_X, LBP_GRID_Y, pFea+WAN_HUA_LIN_DIM+HOG_DIM))
+        {
+            printf("ERROR :: Error occured in extracting LBP feature\n ");
+            continue;   
+        } 
+#endif
 		//{
 		//	FILE *tmp = fopen("../bin/tmp.txt","wb");
 		//	fwrite(hsl_img->imageData, 1,hsl_img->widthStep*hsl_img->height, tmp );
@@ -174,7 +184,7 @@ int main(int argc, char **argv)
         
         //save to file
         fprintf(file_save, "%d ", label);
-        for(i=0; i<FEA_DIM; i++)
+        for(i=0; i<SVM_FEA_DIM; i++)
         {
             fprintf(file_save, "%d:%d ", i+1, pFea[i]);
         }
@@ -188,9 +198,9 @@ int main(int argc, char **argv)
         cvWaitKey(0);
         cvShowImage("test", gray_img);
         cvWaitKey(0);
-        checkGradientImg(pGradient_x, pGradient_y, pGradient,(unsigned char*)(gradient_img->imageData),IMG_WIDTH, IMG_HEIGHT);
-        cvShowImage("test", gradient_img);
-        cvWaitKey(0);
+        /* checkGradientImg(pGradient_x, pGradient_y, pGradient,(unsigned char*)(gradient_img->imageData),IMG_WIDTH, IMG_HEIGHT); */
+        /* cvShowImage("test", gradient_img); */
+        /* cvWaitKey(0); */
 #endif
 
         cvReleaseImage(&src_img);

@@ -5,16 +5,16 @@
 #include <string.h>
 #include "tmem.h"
 
-static int _getCellHist(unsigned char *grayImg, int width, int height,
+static int _getCellHist(unsigned char *grayImg, int widthStep, int width, int height,
                         double *cell_hist, int hist_width, int hist_height, 
                         const int cell_size, const int nBins, const int isPi );
 
 
-static int _getCellHist(unsigned char *grayImg, int width, int height,
+static int _getCellHist(unsigned char *grayImg, int widthStep, int width, int height,
                         double *cell_hist, int hist_width, int hist_height, 
                         const int cell_size, const int nBins, const int isPi )
 {
-#define HOG_GAP (2)      
+#define HOG_GAP (2)   // speedup  
     const float pi = 3.141593f;   
     unsigned char *pImg;
     int x, y, dx, dy;     
@@ -100,12 +100,12 @@ static int _getCellHist(unsigned char *grayImg, int width, int height,
             index = y2 * hist_width*nBins + x2*nBins + bin2;
             cell_hist[index] += grad_mag*fac_y2*fac_x2*fac_o2;
         }
-        pImg += HOG_GAP*width;
+        pImg += HOG_GAP*widthStep;
     }    
     return 0;
 }
 
-int HogFea(THandle hMemBuf, unsigned char *grayImg, int width, int height, int *pHogFea)
+int HogFea(THandle hMemBuf, unsigned char *grayImg, int widthStep, int width, int height, int *pHogFea)
 {    
  
     //initialize  para 
@@ -144,7 +144,7 @@ int HogFea(THandle hMemBuf, unsigned char *grayImg, int width, int height, int *
     }
     
     //get cell histgram first, only support trilinearly interpolation
-    if(0 != _getCellHist(grayImg, width, height, 
+    if(0 != _getCellHist(grayImg, widthStep, width, height, 
                          cell_hist, hist_width, hist_height,
                          cell_size, nBins, isPi))
     {

@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-    int SVMDetector(THandle hMemBuf, svm_model *pSvmModel, TUInt8 *pBGR, int srcWidth,
-                    int srcHeight, int srcWidthStep,TRECT region, int *label);
-
+    int SVMDetector(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
+                    TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
+                    TRECT region, int *label);
 
 #ifdef __cplusplus
 }

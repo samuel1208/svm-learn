@@ -15,7 +15,8 @@ extern "C" {
 #include "tcomdef.h"
     int GetGradient(const unsigned char* pGrayImg, int widthStep_src, int *pGradient_x, int *pGradient_y, int widthStep_dst, int width, int height, GRADIENT_MODE mode);
 
-    int HogFea(THandle hMemBuf, unsigned char *grayImg, int width, int height, int *pHogFea);
+    /*return value : the number of HOG features*/
+    int HogFea(THandle hMemBuf, unsigned char *grayImg, int widthStep,int width, int height, int *pHogFea);
   
 
 

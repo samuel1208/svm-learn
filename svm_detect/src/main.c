@@ -9,7 +9,7 @@
 #include "tcomdef.h"
 #include "SVMDetector.h"
 #include "svm.h"
-
+#include "svm_feature.h"
 static svm_model *pSvmModel_face = NULL;
 //#define SHOW_IMG
 
@@ -22,6 +22,7 @@ int main(int argc, char **argv)
     IplImage  *__src_img =  NULL;
     IplImage  *__src_img_BGR =  NULL;
     int label, rval;
+    int feaUsed;
     TRECT rect;
     
     if(argc < 3)
@@ -58,8 +59,19 @@ int main(int argc, char **argv)
         printf("Init svm model failed\n");
         goto EXIT;
     }
-    
 
+    if(0 == strcmp("face", argv[1]))
+        feaUsed = FEAT_HOG;
+    else if(0 == strcmp("smile", argv[1]))
+        feaUsed = FEAT_HOG;
+    else if(0 == strcmp("gesture", argv[1]))
+        feaUsed = FEAT_WAN_COLOR | FEAT_HOG |  FEAT_LBP_16 ;
+    else
+    {
+        printf("ERROR:: The input model is not exist\n");
+        return -1;
+    }
+    
     while(!feof(file))
     {
         memset(image_path_name, 0, 1024);
@@ -88,7 +100,7 @@ int main(int argc, char **argv)
         rect.bottom = __src_img->height;
         rect.right = __src_img->width;
 
-        rval = SVMDetector(NULL, pSvmModel_face, __src_img_BGR->imageData,
+        rval = SVMDetector(NULL, pSvmModel_face, feaUsed ,__src_img_BGR->imageData,
                            __src_img_BGR->width, __src_img_BGR->height,
                            __src_img_BGR->widthStep, rect, &label);
         if(0 == rval)
