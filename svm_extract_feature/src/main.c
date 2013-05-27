@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     int *pFea_tmp, *pFea = (int *)malloc((WAN_HUA_LIN_DIM + HOG_DIM + LBP_DIM_8 + LBP_DIM_16 ) * sizeof(int));
     // int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_8 | FEAT_LBP_16;
     //int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_16;
-    int feaUsed = FEAT_WAN_COLOR | FEAT_HOG;
+    int feaUsed = FEAT_HOG;
     //int feaUsed = FEAT_LBP_16;
     int i,img_num=0;
 
