@@ -462,7 +462,9 @@ int main(int argc, char **argv)
     {
         printf("---------------------------------------------------------\n");
         printf("usage :\n ");
-        printf("\tsvm_transfer  maxMinFile  trainModel  suffix\n");
+        printf("\tsvm_transfer  maxMinFile  trainModel  suffix version featureTag\n");
+		printf("\nexample :\n ");
+        printf("\tsvm_transfer  v_train_set.range  v_train_set.model  gesture v_1.0.0 HOG|LBP_8\n");
         printf("---------------------------------------------------------\n");
         rVal = -1;
         goto EXIT;
@@ -494,6 +496,11 @@ int main(int argc, char **argv)
 
 
     fprintf(saveFile_c, "\n#include \"svm_constant_%s.h\"\n\n", argv[3]);
+
+	fprintf(saveFile_c, "\n/*********************************************\n");
+    fprintf(saveFile_c, "Train Model Version : %s\n", argv[4]);
+    fprintf(saveFile_c, "Feature used        : %s\n", argv[5]);	
+    fprintf(saveFile_c, "*********************************************/\n");	
 
     //process the min and max file
     maxMinFile = fopen(argv[1], "r");
