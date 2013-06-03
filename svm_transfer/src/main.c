@@ -458,7 +458,7 @@ int main(int argc, char **argv)
     char lineStr[1024];
     char upperSuffix[20] = {0};
     int i=0;
-    if (argc<4)
+    if (argc<6)
     {
         printf("---------------------------------------------------------\n");
         printf("usage :\n ");
