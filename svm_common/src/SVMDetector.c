@@ -25,6 +25,8 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
         feaDim += LBP_DIM_8;    
     if((feaUsed & FEAT_LBP_16))
         feaDim += LBP_DIM_16;
+    if((feaUsed & FEAT_SURF))
+        feaDim += SURF_LEN;
     
     pFea = (int *)TMemAlloc(hMemBuf, sizeof(*pFea)* feaDim);
     if  (TNull == pFea)

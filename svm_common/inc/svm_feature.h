@@ -11,7 +11,8 @@ extern "C" {
         FEAT_WAN_COLOR			=	0x00000001,
         FEAT_HOG	            =	0x00000002,	
         FEAT_LBP_8     			=	0x00000004,
-        FEAT_LBP_16    			=	0x00000008
+        FEAT_LBP_16    			=	0x00000008,
+        FEAT_SURF               =   0x00000010
     };
 
     int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight, 

@@ -37,5 +37,9 @@
     #define LBP_MAX_RADIUS (0)
 #endif
 
+#define SURF_CELL_NUM_X (4)
+#define SURF_CELL_NUM_Y (4)
+#define  SURF_TYPE      (8)
+#define SURF_LEN  (SURF_CELL_NUM_X * SURF_CELL_NUM_Y * SURF_TYPE)
 
 #endif

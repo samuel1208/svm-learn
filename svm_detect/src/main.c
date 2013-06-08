@@ -63,9 +63,9 @@ int main(int argc, char **argv)
     if(0 == strcmp("face", argv[1]))
         feaUsed = FEAT_HOG;
     else if(0 == strcmp("smile", argv[1]))
-        feaUsed = FEAT_HOG;
+        feaUsed = FEAT_SURF;
     else if(0 == strcmp("gesture", argv[1]))
-        feaUsed = FEAT_HOG  ;
+        feaUsed = FEAT_SURF  ;
     else
     {
         printf("ERROR:: The input model is not exist\n");

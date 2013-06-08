@@ -144,8 +144,8 @@ static double _kFunction(const svm_node *x, const svm_node *y, const svm_paramet
 	{
 		case RBF:
 		{
-			long long sum = 0;
-			long long  d = 0;
+			TInt64 sum = 0;
+			TInt64  d = 0;
 			while(x->index != -1 && y->index !=-1)
 			{
 				if(x->index == y->index)

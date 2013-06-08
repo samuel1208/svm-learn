@@ -8,6 +8,7 @@
 #include "HogFea.h"
 #include "svm_config.h"
 #include "svm_feature.h"
+#include "SURFDescriptor.h"
 //#define SHOW_IMG
 
 #ifdef SHOW_IMG
@@ -61,7 +62,8 @@ int main(int argc, char **argv)
     int *pFea_tmp, *pFea = (int *)malloc((WAN_HUA_LIN_DIM + HOG_DIM + LBP_DIM_8 + LBP_DIM_16 ) * sizeof(int));
     // int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_8 | FEAT_LBP_16;
     //int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_16;
-    int feaUsed = FEAT_HOG;
+    //int feaUsed = FEAT_HOG;
+    int feaUsed = FEAT_SURF;
     //int feaUsed = FEAT_LBP_16;
     int i,img_num=0;
 
@@ -128,6 +130,11 @@ int main(int argc, char **argv)
     {
         printf("\t LBP_16 dim   : used %d\n", LBP_DIM_16);
         fea_used_num += LBP_DIM_16;
+    }
+    if(feaUsed & FEAT_SURF)
+    {
+        printf("\t SURF  dim    : used %d\n", SURF_LEN);
+        fea_used_num += SURF_LEN;
     }
     printf("\t Total Dim    :      %d\n", fea_used_num);
     printf("---------------------------------------------\n");
@@ -202,6 +209,16 @@ int main(int argc, char **argv)
                 continue;   
             } 
             pFea_tmp += LBP_DIM_16;
+        }
+
+        if(feaUsed & FEAT_SURF)
+        {
+            if(SURF_LEN != SURFFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea_tmp))
+            {
+                printf("ERROR :: Error occured in extracting SURF feature\n ");
+                continue;
+            }
+            pFea_tmp += SURF_LEN;
         }
 		//{
 		//	FILE *tmp = fopen("../bin/tmp.txt","wb");

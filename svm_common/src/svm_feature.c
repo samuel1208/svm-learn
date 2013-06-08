@@ -82,7 +82,8 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
         pDst += WAN_HUA_LIN_DIM;
     }
 
-    if((feaUsed & FEAT_HOG) || (feaUsed & FEAT_LBP_16) || (feaUsed & FEAT_LBP_8))
+    if((feaUsed & FEAT_SURF)||(feaUsed & FEAT_HOG) 
+       || (feaUsed & FEAT_LBP_16) || (feaUsed & FEAT_LBP_8))
     {
         pGray = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*IMG_WIDTH*IMG_HEIGHT);
         if(TNull == pGray)
@@ -115,6 +116,16 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
             rVal = -1;
             goto EXIT;
         }
+    }
+
+    if(feaUsed & FEAT_SURF)
+    {
+        if(SURF_LEN != SURFFea(hMemBuf, pGray, IMG_WIDTH, IMG_WIDTH, IMG_HEIGHT,pDst))
+        { 
+            rVal = -1;
+            goto EXIT;
+        }
+        pDst += SURF_LEN;
     }
     
  EXIT:
