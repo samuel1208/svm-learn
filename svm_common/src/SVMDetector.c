@@ -3,14 +3,22 @@
 #include "svm_feature.h"
 #include "svm_config.h"
 
-
 int SVMDetector(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
-                TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
+                    TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
                 TRECT region, int *label)
+{
+    return SVMDetector_ex(hMemBuf, pSvmModel, feaUsed,
+                          pBGR, srcWidth, srcHeight, srcWidthStep,
+                          region, label, 0);
+}
+int SVMDetector_ex(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
+                TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
+                TRECT region, int *label, int bIsExtended)
 {
     int rVal = 0;
     int *pFea = TNull;
     int feaDim = 0;
+    
 
     if((TNull == pBGR) || (TNull == label))
     {
@@ -34,10 +42,39 @@ int SVMDetector(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
         rVal = -1;
         goto EXIT;
     }
-    
-    //get feature
-    rVal = svm_feature(hMemBuf, pBGR, srcWidth, srcHeight, 
-                       srcWidthStep, region, pFea, feaUsed);
+        //extend two side
+    if(1 == bIsExtended)
+    {
+        int dstWidth = region.right- region.left;
+        int dstHeight = region.bottom - region.top;
+        int extend = (int)(dstWidth*0.2f), h;
+        TUInt8 *extendBuf = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*dstHeight*(dstWidth+2*extend)*3);
+        if(TNull == extendBuf)
+        {
+            rVal = -1;
+            goto EXIT;
+        }
+        TMemSet(extendBuf, 0 ,sizeof(TUInt8)*dstHeight*(dstWidth+2*extend)*3);
+        
+        pBGR += region.left*3;
+        for(h=0; h<dstHeight; h++)
+        {
+            TMemCpy(extendBuf+3*extend+h*(dstWidth+2*extend)*3, pBGR , dstWidth*3);
+            pBGR += srcWidthStep;
+        }
+        
+        dstWidth += 2*extend;
+        region.left = region.top = 0;
+        region.bottom = dstHeight;
+        region.right = dstWidth;
+        rVal = svm_feature(hMemBuf, extendBuf, dstWidth, dstHeight, 
+                           dstWidth*3, region, pFea, feaUsed);
+        TMemFree(hMemBuf, extendBuf);
+    }
+    else
+        //get feature
+        rVal = svm_feature(hMemBuf, pBGR, srcWidth, srcHeight, 
+                           srcWidthStep, region, pFea, feaUsed);
     if(0 != rVal)
         goto EXIT; 
 

@@ -6,7 +6,7 @@
 #include "LBP_Fea.h"
 #include "tcomdef.h"
 #include "tmem.h"
-
+#include "SURFDescriptor.h"
 
 int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight, 
                 int srcWidthStep, TRECT region, int *pFea, int feaUsed)
@@ -135,7 +135,7 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
             TMemFree(hMemBuf, pHSL);
     }
     
-    if((feaUsed & FEAT_HOG) || (feaUsed & FEAT_LBP_8) || (feaUsed & FEAT_LBP_16))
+    if((feaUsed & FEAT_HOG) || (feaUsed & FEAT_LBP_8) || (feaUsed & FEAT_LBP_16)||(feaUsed & FEAT_SURF))
     {
         if(pGray)      TMemFree(hMemBuf, pGray);
     }

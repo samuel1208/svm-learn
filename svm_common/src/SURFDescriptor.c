@@ -160,7 +160,7 @@ static int __getCellFea(int *pGx, int *pGy, int widthStep,
 int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, int height, int *pSURFFea)
 {
     int rVal = 0;
-    int x, y, w,h;
+    int x, y;
     int cell_width, cell_height;
     int *pGx = TNull, *pGy = TNull;
     if((TNull == pGray) || (TNull == pSURFFea))

@@ -3,7 +3,7 @@
 
 
 /*********************************************
-Train Model Version : v_1.1
+Train Model Version : v_1.2
 Feature used        : SURF
 *********************************************/
 int i32MinRange_gesture = -1;

@@ -88,8 +88,6 @@ static double _kFunction(const svm_node *x, const svm_node *y, const svm_paramet
 
 svm_model* Init_svm(THandle hMemBuf, const char *suffix)
 {
-    int rVal = 0;
-    
     if(TNull == suffix)
         return TNull;
 

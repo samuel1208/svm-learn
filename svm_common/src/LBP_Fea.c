@@ -4,8 +4,8 @@
 #include "LBP_lookup.h"
 #include "svm_config.h"
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+/* #include <opencv/cv.h> */
+/* #include <opencv/highgui.h> */
 
 static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height, 
                      int *pLBPImg,  int width_lbp, int height_lbp, int radius, int neighbor)
@@ -52,16 +52,16 @@ static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height,
                 int x2 = x1+1;
                 int y2 = y1+1;
                 unsigned char v1, v2, v3, v4;
-                float w1,w2,w3,w4;
+                //               float w1,w2,w3,w4;
                 v1 = pImg[y1*widthStep + x1];
                 v2 = pImg[y1*widthStep + x2];
                 v3 = pImg[y2*widthStep + x1];
                 v4 = pImg[y2*widthStep + x2];
 
-                w1 = (1-fc_y)*(1-fc_x);
-                w2 = (1-fc_y)*fc_x;
-                w3 = fc_y*(1-fc_x);
-                w4 = (fc_y*fc_x);
+                /* w1 = (1-fc_y)*(1-fc_x); */
+                /* w2 = (1-fc_y)*fc_x; */
+                /* w3 = fc_y*(1-fc_x); */
+                /* w4 = (fc_y*fc_x); */
                 
                 //val_f = w1*v1 + w2*v2 + w3*v3 + w4*v4;
                 val_f = (1-fc_y)*((1-fc_x)*v1 + fc_x*v2) + fc_y*((1-fc_x)*v3 + fc_x*v4);

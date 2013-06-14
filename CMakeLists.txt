@@ -17,6 +17,7 @@ else()
 	return()	
 endif()
 
+add_definitions(-Wall)
 include_directories(${OpenCV_INCLUDE_DIRS}) 
 include_directories(./svm_common/inc) 
 MESSAGE(${OpenCV_INCLUDE_DIRS})
