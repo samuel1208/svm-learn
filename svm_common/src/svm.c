@@ -2,6 +2,7 @@
 #include "svm_constant.h"
 #include "tmem.h"
 #include "math.h"
+#include <string.h>
 #define SVM_BIT_MOVE  (24)
 
 #define   INIT_SVM_FUNC(suffix)                                     \
@@ -10,7 +11,7 @@
               int rVal = 0, m = 0, total_sv_num=0, i, j;            \
               svm_model *pSvmModel = TNull;                         \
                                                                     \
-              pSvmModel = TMemAlloc(hMemBuf, sizeof(svm_model));    \
+              pSvmModel = (svm_model*)TMemAlloc(hMemBuf, sizeof(svm_model));  \
               if(TNull == pSvmModel)                                \
               {                                                     \
                   rVal = -1;                                        \
@@ -31,8 +32,8 @@
                                                                     \
               m = pSvmModel->nr_class - 1;                          \
               total_sv_num = pSvmModel->l;                          \
-              pSvmModel->sv_coef = TMemAlloc(hMemBuf, sizeof(double *)*m);           \
-              pSvmModel->SV = TMemAlloc(hMemBuf, sizeof(svm_node *)*total_sv_num);   \
+              pSvmModel->sv_coef = (double**)TMemAlloc(hMemBuf, sizeof(double *)*m); \
+              pSvmModel->SV = (svm_node **)TMemAlloc(hMemBuf, sizeof(svm_node *)*total_sv_num); \
               if ((TNull == pSvmModel->sv_coef) || (TNull == pSvmModel->SV))         \
               {                                                                      \
                   rVal = -1;                                                         \
@@ -87,7 +88,7 @@ static double _kFunction(const svm_node *x, const svm_node *y, const svm_paramet
 
 
 svm_model* Init_svm(THandle hMemBuf, const char *suffix)
-{
+{    
     if(TNull == suffix)
         return TNull;
 
@@ -98,7 +99,7 @@ svm_model* Init_svm(THandle hMemBuf, const char *suffix)
     else if(strcmp(suffix,"gesture") == 0)
         return Init_svm_gesture(hMemBuf);	
 	
-        return TNull;
+    return TNull;
 }
 
 void  Uninit_svm(THandle hMemBuf, svm_model ** ppModel)
@@ -126,9 +127,9 @@ static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_n
 	if(model->param.svm_type == ONE_CLASS ||
 	   model->param.svm_type == EPSILON_SVR ||
 	   model->param.svm_type == NU_SVR)
-		dec_values = TMemAlloc(hMemBuf,sizeof(double));
+		dec_values = (double*)TMemAlloc(hMemBuf,sizeof(double));
 	else 
-		dec_values = TMemAlloc(hMemBuf, sizeof(double)*nr_class*(nr_class-1)/2);
+		dec_values =(double *) TMemAlloc(hMemBuf, sizeof(double)*nr_class*(nr_class-1)/2);
 	pred_result = __svm_predict_values(hMemBuf, model, x, dec_values);
 
     if(dec_values) TMemFree(hMemBuf, dec_values);
@@ -220,16 +221,16 @@ static double __svm_predict_values(THandle hMemBuf, const svm_model *model, cons
         int *vote;
         int vote_max_idx = 0;
 
-        kvalue =  TMemAlloc(hMemBuf, sizeof(double)*l);
+        kvalue =  (double *)TMemAlloc(hMemBuf, sizeof(double)*l);
 		for(i=0;i<l;i++)
 			kvalue[i] = _kFunction(x,model->SV[i],&model->param);
 
-		start = TMemAlloc(hMemBuf, sizeof(int)*nr_class);
+		start = (int *)TMemAlloc(hMemBuf, sizeof(int)*nr_class);
 		start[0] = 0;
 		for(i=1;i<nr_class;i++)
 			start[i] = start[i-1]+model->nSV[i-1];
 
-		vote = TMemAlloc(hMemBuf, sizeof(int)*nr_class);
+		vote = (int *)TMemAlloc(hMemBuf, sizeof(int)*nr_class);
 		for(i=0;i<nr_class;i++)
 			vote[i] = 0;
 		p=0;
@@ -321,7 +322,7 @@ int   SvmPredict(THandle hMemBuf, svm_model *pSvmModel, int *pFea, int feaLen, i
     int *pMinMaxFeaVal = TNull ; 
     int feaLower, feaUpper;
     
-    pNode = TMemAlloc(hMemBuf, sizeof(svm_node) * (feaLen+1));
+    pNode = (svm_node*)TMemAlloc(hMemBuf, sizeof(svm_node) * (feaLen+1));
     
     if ( 
           (TNull == pSvmModel) || (TNull == pFea) 
