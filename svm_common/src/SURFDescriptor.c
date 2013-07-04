@@ -201,6 +201,7 @@ int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, in
         }
     }
 
+    pSURFFea -= SURF_LEN;
     //normalize use L2-Hys
     norm = 0;
     for(x=0; x<SURF_LEN; x++)
@@ -213,6 +214,8 @@ int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, in
             val = pSURFFea[x]/norm;
             if(val > clip_val)
                 val = clip_val;
+            else if(val < -clip_val)
+                val = -clip_val;
             pFea_temp[x] = val;
         }
     }
