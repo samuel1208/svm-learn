@@ -132,6 +132,7 @@ int HogFea(THandle hMemBuf, unsigned char *grayImg, int widthStep, int width, in
     cell_height = floor(height*1.0f/cell_size + 0.5f);
     nFeaDim = (cell_width-(block_size-1))*(cell_height-(block_size-1))*nBins*block_size*block_size;
     
+    //这里加2是为了后面的插值
     hist_width = cell_width+2;
     hist_height = cell_height + 2;
     cell_hist = (double*)TMemAlloc(hMemBuf, hist_width*hist_height*nBins*sizeof(double));
@@ -152,7 +153,8 @@ int HogFea(THandle hMemBuf, unsigned char *grayImg, int widthStep, int width, in
         goto EXIT;
     }
 
-    //get fea
+    //由于前面加2进行插值， 所以这里要跳过第一个和最后一个
+    //get fea -- normalize with L2-Hys
     TMemSet(block, 0,block_size*block_size*nBins*sizeof(double));
      for(y=1; y<hist_height-block_size; y++)
      {

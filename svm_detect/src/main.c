@@ -66,6 +66,8 @@ int main(int argc, char **argv)
         feaUsed = FEAT_SURF;
     else if(0 == strcmp("gesture", argv[1]))
         feaUsed = FEAT_SURF  ;
+    else if(0 == strcmp("eyeclosed", argv[1]))
+        feaUsed = FEAT_SURF  ;
     else
     {
         printf("ERROR:: The input model is not exist\n");

@@ -163,6 +163,10 @@ int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, in
     int x, y;
     int cell_width, cell_height;
     int *pGx = TNull, *pGy = TNull;
+    float *pFea_temp = TNull;
+    double norm = 0;
+    float val;
+    float clip_val = 0.2;
     if((TNull == pGray) || (TNull == pSURFFea))
     {
         rVal = -1;
@@ -171,8 +175,9 @@ int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, in
 
     pGx = (int *)TMemAlloc(hMemBuf, width *height*sizeof(int));
     pGy = (int *)TMemAlloc(hMemBuf, width *height*sizeof(int));
+    pFea_temp = (float *)TMemAlloc(hMemBuf, SURF_LEN*sizeof(float));
     
-    if((TNull == pGx) || (TNull == pGy))
+    if((TNull == pGx) || (TNull == pGy) || (TNull == pFea_temp))
     {
         rVal = -1;
         goto EXIT;
@@ -196,9 +201,51 @@ int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, in
         }
     }
 
+    //normalize use L2-Hys
+    norm = 0;
+    for(x=0; x<SURF_LEN; x++)
+        norm += pSURFFea[x]*pSURFFea[x];
+    norm = sqrt(norm);
+    if(norm > 0)
+    {
+        for(x=0; x<SURF_LEN; x++)
+        {
+            val = pSURFFea[x]/norm;
+            if(val > clip_val)
+                val = clip_val;
+            pFea_temp[x] = val;
+        }
+    }
+    else
+    {
+        for(x=0; x<SURF_LEN; x++)
+            pFea_temp[x] = 0;
+    }
+
+    norm = 0;
+    for(x=0; x<SURF_LEN; x++)
+        norm += pFea_temp[x]*pFea_temp[x];
+    norm = sqrt(norm);
+    if(norm > 0)
+    {
+        for(x=0; x<SURF_LEN; x++)
+        {
+            val = pFea_temp[x]/norm;
+            pSURFFea[x] = val * (1<<24);
+        }
+    }
+    else
+    {
+        for(x=0; x<SURF_LEN; x++)
+            pSURFFea[x] = 0;
+    }
+
+
+
     rVal = SURF_LEN;
  EXIT:
     if(pGx) TMemFree(hMemBuf, pGx);
     if(pGy) TMemFree(hMemBuf, pGy);
+    if(pFea_temp) TMemFree(hMemBuf, pFea_temp);
     return rVal;
 }

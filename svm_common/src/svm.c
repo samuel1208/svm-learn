@@ -80,6 +80,7 @@
 INIT_SVM_FUNC(face);
 INIT_SVM_FUNC(gesture);
 INIT_SVM_FUNC(smile);
+INIT_SVM_FUNC(eyeclosed);
 /*************************************************************************************/
 static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower, int upper, int feaLen);
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x);
@@ -97,7 +98,9 @@ svm_model* Init_svm(THandle hMemBuf, const char *suffix)
     else if(strcmp(suffix,"smile") == 0)
         return Init_svm_smile(hMemBuf);
     else if(strcmp(suffix,"gesture") == 0)
-        return Init_svm_gesture(hMemBuf);	
+        return Init_svm_gesture(hMemBuf);
+    else if(strcmp(suffix,"eyeclosed") == 0)
+        return Init_svm_eyeclosed(hMemBuf);
 	
     return TNull;
 }

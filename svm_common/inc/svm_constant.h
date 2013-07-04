@@ -4,6 +4,6 @@
 #include "svm_constant_gesture.h"
 #include "svm_constant_smile.h"
 #include "svm_constant_face.h"
-
+#include "svm_constant_eyeclosed.h"
 
 #endif
