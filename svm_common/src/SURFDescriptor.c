@@ -1,6 +1,6 @@
 #include "SURFDescriptor.h"
 #include "svm_config.h"
-
+#include <math.h>
 #define TABS(x)   ((x)>0? (x):(-x))  
 
 

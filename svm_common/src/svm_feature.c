@@ -43,8 +43,10 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
 		scaleWidthStep = IMG_WIDTH*3;
 		pBGR_scale = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*scaleWidthStep*IMG_HEIGHT);
 		if(TNull == pBGR_scale)
+        {
+            rVal =-1;
 			goto EXIT;
-		
+		}
 		__pBGR = pBGR + region.top*srcWidthStep + region.left*3;
 
 		// scale image to IMG_WIDTH*IMG_HEIGHT
