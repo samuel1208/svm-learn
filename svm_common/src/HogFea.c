@@ -5,6 +5,12 @@
 #include <string.h>
 #include "tmem.h"
 
+
+int GetHOGDim(int width, int height)
+{
+    return ((width/12)-1)*((height/12)-1)*4*9;
+}
+
 static int _getCellHist(unsigned char *grayImg, int widthStep, int width, int height,
                         double *cell_hist, int hist_width, int hist_height, 
                         const int cell_size, const int nBins, const int isPi );

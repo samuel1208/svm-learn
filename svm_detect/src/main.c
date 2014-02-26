@@ -4,13 +4,9 @@
 #include <stdlib.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "WanHuaLinFea.h"
-#include "HogFea.h"
 #include "tcomdef.h"
 #include "SVMDetector.h"
-#include "svm.h"
-#include "svm_feature.h"
-static svm_model *pSvmModel_face = NULL;
+
 //#define SHOW_IMG
 
 
@@ -22,8 +18,8 @@ int main(int argc, char **argv)
     IplImage  *__src_img =  NULL;
     IplImage  *__src_img_BGR =  NULL;
     int label, rval;
-    int feaUsed;
     TRECT rect;
+    THandle detector = 0;
     
     if(argc < 3)
     {
@@ -53,29 +49,13 @@ int main(int argc, char **argv)
     cvNamedWindow("test", 0);
 #endif
     
-    pSvmModel_face = Init_svm(NULL, argv[1]);
-    if(NULL ==pSvmModel_face )
+    detector = SVMDetector_init(NULL, argv[1]);
+    if(0 == detector)
     {
-        printf("Init svm model failed\n");
+        printf("Init svm detector failed\n");
         goto EXIT;
     }
 
-    if(0 == strcmp("face", argv[1]))
-        feaUsed = FEAT_HOG;
-    else if(0 == strcmp("smile", argv[1]))
-        feaUsed = FEAT_SURF;
-    else if(0 == strcmp("gesture", argv[1]))
-        feaUsed = FEAT_SURF  ;
-    else if(0 == strcmp("eyeclosed", argv[1]))
-        feaUsed = FEAT_SURF  ;
-    else if(0 == strcmp("eyeopen", argv[1]))
-        feaUsed = FEAT_SURF  ;
-    else
-    {
-        printf("ERROR:: The input model is not exist\n");
-        return -1;
-    }
-    
     while(!feof(file))
     {
         memset(image_path_name, 0, 1024);
@@ -104,9 +84,9 @@ int main(int argc, char **argv)
         rect.bottom = __src_img->height;
         rect.right = __src_img->width;
 
-        rval = SVMDetector(NULL, pSvmModel_face, feaUsed ,__src_img_BGR->imageData,
-                           __src_img_BGR->width, __src_img_BGR->height,
-                           __src_img_BGR->widthStep, rect, &label);
+        rval = SVMDetector_detect(detector, __src_img_BGR->imageData,
+                                  __src_img_BGR->width, __src_img_BGR->height,
+                                  __src_img_BGR->widthStep, rect, &label);
         if(0 == rval)
             fprintf(file_output, "%d\n", label);
         else
@@ -147,6 +127,6 @@ int main(int argc, char **argv)
  EXIT:
     if(file)          fclose(file);
     if(file_output)   fclose(file_output);
-    Uninit_svm(NULL, &pSvmModel_face);
+    SVMDetector_uninit(&detector);
     return 0;
 }

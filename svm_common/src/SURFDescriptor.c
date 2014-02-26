@@ -1,8 +1,15 @@
 #include "SURFDescriptor.h"
-#include "svm_config.h"
 #include <math.h>
 #define TABS(x)   ((x)>0? (x):(-x))  
 
+#define SURF_CELL_NUM_X (4)
+#define SURF_CELL_NUM_Y (4)
+#define  SURF_TYPE      (8)
+
+int GetSURFDim()
+{
+    return (SURF_CELL_NUM_X * SURF_CELL_NUM_Y * SURF_TYPE);
+}
 
 static int __getGradient_simple(const unsigned char* pGrayImg, int widthStep_src, int *pGradient_x, int *pGradient_y, int widthStep_dst, int width, int height);
 static int __getCellFea(int *pGx, int *pGy, int nWidthStep, int width, int height, int *pFea);
@@ -167,12 +174,14 @@ int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, in
     double norm = 0;
     float val;
     float clip_val = 0.2;
+    int SURF_LEN =0; 
     if((TNull == pGray) || (TNull == pSURFFea))
     {
         rVal = -1;
         goto EXIT;        
     }
 
+    SURF_LEN = GetSURFDim();
     pGx = (int *)TMemAlloc(hMemBuf, width *height*sizeof(int));
     pGy = (int *)TMemAlloc(hMemBuf, width *height*sizeof(int));
     pFea_temp = (float *)TMemAlloc(hMemBuf, SURF_LEN*sizeof(float));

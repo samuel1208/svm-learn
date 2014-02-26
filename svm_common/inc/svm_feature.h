@@ -16,7 +16,8 @@ extern "C" {
     };
 
     int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight, 
-                    int srcWidthStep, TRECT region, int *pFea, int feaUsed);
+                    int srcWidthStep, TRECT region, int *pFea, int feaUsed,
+                    int IMG_WIDTH_BASE, int IMG_HEIGHT_BASE);
 
 
 

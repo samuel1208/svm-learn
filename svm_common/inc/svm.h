@@ -43,9 +43,6 @@ typedef struct __tagSvm_model
     svm_parameter param;
 }svm_model;
 
-svm_model* Init_svm(THandle hMemBuf, const char *suffix);
-void  Uninit_svm(THandle hMemBuf, svm_model ** ppModel);
-
 /* 0 - nonface  1 face */
 int   SvmPredict(THandle hMemBuf, svm_model *pSvmModel, int *pFea, int feaLength, int *label);
 

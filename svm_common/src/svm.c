@@ -1,128 +1,13 @@
 #include "svm.h"
-#include "svm_constant.h"
 #include "tmem.h"
 #include "math.h"
 #include <string.h>
 #define SVM_BIT_MOVE  (24)
 
-#define   INIT_SVM_FUNC(suffix)                                     \
-          static svm_model*  Init_svm_##suffix (THandle hMemBuf)    \
-          {                                                         \
-              int rVal = 0, m = 0, total_sv_num=0, i, j;            \
-              svm_model *pSvmModel = TNull;                         \
-                                                                    \
-              pSvmModel = (svm_model*)TMemAlloc(hMemBuf, sizeof(svm_model));  \
-              if(TNull == pSvmModel)                                \
-              {                                                     \
-                  rVal = -1;                                        \
-                  goto EXIT;                                        \
-              }                                                     \
-              pSvmModel->param.svm_type = svm_type_##suffix;        \
-              pSvmModel->param.kernel_type = kernel_type_##suffix;  \
-              pSvmModel->param.degree = degree_##suffix;            \
-              pSvmModel->param.gamma  = gamma_##suffix;             \
-              pSvmModel->param.coef0  = coef0_##suffix;             \
-              pSvmModel->nr_class = nr_class_##suffix;              \
-              pSvmModel->l = total_sv_##suffix;                     \
-              pSvmModel->rho = pRho_##suffix;                       \
-              pSvmModel->probA = pProbA_##suffix;                    \
-              pSvmModel->probB = pProbB_##suffix;                    \
-              pSvmModel->label = pLabel_##suffix;                   \
-              pSvmModel->nSV = pNr_sv_##suffix;                     \
-                                                                    \
-              m = pSvmModel->nr_class - 1;                          \
-              total_sv_num = pSvmModel->l;                          \
-              pSvmModel->sv_coef = (double**)TMemAlloc(hMemBuf, sizeof(double *)*m); \
-              pSvmModel->SV = (svm_node **)TMemAlloc(hMemBuf, sizeof(svm_node *)*total_sv_num); \
-              if ((TNull == pSvmModel->sv_coef) || (TNull == pSvmModel->SV))         \
-              {                                                                      \
-                  rVal = -1;                                                         \
-                  goto EXIT;                                                         \
-              }                                                                      \
-                                                                                     \
-              for(i=0; i<m; i++)                                                     \
-                  pSvmModel->sv_coef[i] = &pCoef_##suffix[i*total_sv_num];           \
-              j = 0;                                                                 \
-              for(i=0; i<total_sv_num;i++)                                           \
-              {                                                                      \
-                  pSvmModel->SV[i] = &pSvm_node_##suffix[j];                         \
-                  while(1)                                                           \
-                  {                                                                  \
-                      j++;                                                           \
-                      if(-1 == pSvm_node_##suffix[j].index)                          \
-					  {                                                              \
-					      j++;                                                       \
-						  break;                                                     \
-		              }                                                              \
-                  }                                                                  \
-              }                                                                      \
-                                                                                     \
-              pSvmModel->pMinMaxFeaVal = pMinMaxFeaVal_##suffix;                     \
-              pSvmModel->feaLower = i32MinRange_##suffix;                            \
-              pSvmModel->feaUpper = i32MaxRange_##suffix;                            \
-              rVal = 0;                                                              \
-          EXIT:                                                                      \
-              if(0 != rVal)                                                          \
-              {                                                                      \
-                  if(pSvmModel)                                                      \
-                  {                                                                  \
-                      if(pSvmModel->sv_coef)                                         \
-                          TMemFree(hMemBuf, pSvmModel->sv_coef);                     \
-                      if(pSvmModel->SV)                                              \
-                          TMemFree(hMemBuf, pSvmModel->SV);                          \
-                      TMemFree(hMemBuf, pSvmModel);                                  \
-                  }                                                                  \
-                  pSvmModel = TNull;                                                 \
-              }                                                                      \
-              return pSvmModel;                                                      \
-          }
-
-INIT_SVM_FUNC(face);
-INIT_SVM_FUNC(gesture);
-INIT_SVM_FUNC(smile);
-INIT_SVM_FUNC(eyeclosed);
-INIT_SVM_FUNC(eyeopen);
-/*************************************************************************************/
 static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower, int upper, int feaLen);
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x);
 static double __svm_predict_values(THandle hMemBuf, const svm_model *model, const svm_node *x, double* dec_values);
 static double _kFunction(const svm_node *x, const svm_node *y, const svm_parameter* param);
-
-
-svm_model* Init_svm(THandle hMemBuf, const char *suffix)
-{    
-    if(TNull == suffix)
-        return TNull;
-
-    if(strcmp(suffix,"face") == 0)
-        return Init_svm_face(hMemBuf);
-    else if(strcmp(suffix,"smile") == 0)
-        return Init_svm_smile(hMemBuf);
-    else if(strcmp(suffix,"gesture") == 0)
-        return Init_svm_gesture(hMemBuf);
-    else if(strcmp(suffix,"eyeclosed") == 0)
-        return Init_svm_eyeclosed(hMemBuf);
-    else if(strcmp(suffix,"eyeopen") == 0)
-        return Init_svm_eyeopen(hMemBuf);
-	
-    return TNull;
-}
-
-void  Uninit_svm(THandle hMemBuf, svm_model ** ppModel)
-{
-             
-    svm_model *pSvmModel = *ppModel;                                                      
-    if(pSvmModel)                                                      
-    {                                                                  
-        if(pSvmModel->sv_coef)                                         
-            TMemFree(hMemBuf, pSvmModel->sv_coef);                     
-        if(pSvmModel->SV)                                              
-            TMemFree(hMemBuf, pSvmModel->SV);                          
-        TMemFree(hMemBuf, pSvmModel);                                  
-    }                                                                 
-     
-    *ppModel = TNull;   
-}
 
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x)
 {

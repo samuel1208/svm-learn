@@ -2,10 +2,21 @@
 #include "tmem.h"
 #include <math.h>
 #include "LBP_lookup.h"
-#include "svm_config.h"
 
 /* #include <opencv/cv.h> */
 /* #include <opencv/highgui.h> */
+
+/*
+  MAX_RADIUS=3  make the radius-2 and radius-3 have interal block num.
+  (only work for 24 and 48) 
+*/
+#define LBP_MAX_RADIUS (3)
+
+int GetLBPDim(int neighbor , int lbp_grid_x, int lbp_grid_y)
+{
+    return (neighbor+2)* lbp_grid_x *lbp_grid_y;
+}
+
 
 static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height, 
                      int *pLBPImg,  int width_lbp, int height_lbp, int radius, int neighbor)

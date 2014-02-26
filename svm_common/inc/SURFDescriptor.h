@@ -9,7 +9,8 @@ extern "C"{
 
 #include "tcomdef.h"
 #include "tmem.h"
-
+    
+    int GetSURFDim();
     int SURFFea(THandle hMemBuf, unsigned char *pGray, int nWidthStep, int width, int height, int *pSURFFea);
 
 

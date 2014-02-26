@@ -1,21 +1,22 @@
 #include "svm_feature.h"
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
-#include "svm.h"
-#include "svm_config.h"
 #include "LBP_Fea.h"
 #include "tcomdef.h"
 #include "tmem.h"
 #include "SURFDescriptor.h"
 
+
 int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight, 
-                int srcWidthStep, TRECT region, int *pFea, int feaUsed)
+                int srcWidthStep, TRECT region, int *pFea, int feaUsed,
+                int IMG_WIDTH_BASE, int IMG_HEIGHT_BASE)
 {
     int rVal = 0;
     TUInt8 *__pBGR, *pHSL = TNull, *pBGR_scale = TNull, *pGray = TNull;
     int dstWidth=0, dstHeight=0;
 	int scaleWidthStep = 0;
     int *pDst = TNull;
+    int feaDim = 0;
 
     if((TNull == pBGR) || (TNull == pFea))
     {
@@ -38,10 +39,10 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
         goto EXIT;
     }
 
-	if((dstWidth != IMG_WIDTH) || (dstHeight != IMG_HEIGHT))
+	if((dstWidth != IMG_WIDTH_BASE) || (dstHeight != IMG_HEIGHT_BASE))
 	{
-		scaleWidthStep = IMG_WIDTH*3;
-		pBGR_scale = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*scaleWidthStep*IMG_HEIGHT);
+		scaleWidthStep = IMG_WIDTH_BASE*3;
+		pBGR_scale = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*scaleWidthStep*IMG_HEIGHT_BASE);
 		if(TNull == pBGR_scale)
         {
             rVal =-1;
@@ -49,9 +50,9 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
 		}
 		__pBGR = pBGR + region.top*srcWidthStep + region.left*3;
 
-		// scale image to IMG_WIDTH*IMG_HEIGHT
+		// scale image to IMG_WIDTH_BASE*IMG_HEIGHT_BASE
 		rVal = ScaleImg3(__pBGR , dstWidth, dstHeight, srcWidthStep,
-                     pBGR_scale, IMG_WIDTH, IMG_HEIGHT, scaleWidthStep);
+                     pBGR_scale, IMG_WIDTH_BASE, IMG_HEIGHT_BASE, scaleWidthStep);
 		if(0 != rVal)
 			goto EXIT;
 	}
@@ -65,69 +66,74 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
     pDst = pFea;
     if(feaUsed & FEAT_WAN_COLOR)
     {
-        pHSL = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*IMG_WIDTH*IMG_HEIGHT*3);
+        pHSL = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*IMG_WIDTH_BASE*IMG_HEIGHT_BASE*3);
         if(TNull == pHSL)
         {
             rVal = -1;
             goto EXIT;
         }
 
-        rVal = BGRtoHSL(pBGR_scale, pHSL, IMG_HEIGHT, IMG_WIDTH,
-                        scaleWidthStep, IMG_WIDTH*3);
+        rVal = BGRtoHSL(pBGR_scale, pHSL, IMG_HEIGHT_BASE, IMG_WIDTH_BASE,
+                        scaleWidthStep, IMG_WIDTH_BASE*3);
         if(0 != rVal)
             goto EXIT;
         
         //get wan feature : fast sample by setp 2
-        rVal = WanHuaLinColorFea(pHSL, IMG_WIDTH*3, IMG_WIDTH,  IMG_HEIGHT, pDst);
+        rVal = WanHuaLinColorFea(pHSL, IMG_WIDTH_BASE*3, IMG_WIDTH_BASE,  IMG_HEIGHT_BASE, pDst);
         if(0 != rVal)
             goto EXIT;
-        pDst += WAN_HUA_LIN_DIM;
+        pDst += GetWANDim();
     }
 
     if((feaUsed & FEAT_SURF)||(feaUsed & FEAT_HOG) 
        || (feaUsed & FEAT_LBP_16) || (feaUsed & FEAT_LBP_8))
     {
-        pGray = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*IMG_WIDTH*IMG_HEIGHT);
+        pGray = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*IMG_WIDTH_BASE*IMG_HEIGHT_BASE);
         if(TNull == pGray)
         {
             rVal = -1; 
             goto EXIT;
         }
         
-        rVal = BGRtoGray(pBGR_scale, IMG_WIDTH, IMG_HEIGHT, scaleWidthStep, pGray);
+        rVal = BGRtoGray(pBGR_scale, IMG_WIDTH_BASE, IMG_HEIGHT_BASE, scaleWidthStep, pGray);
         if(0 != rVal)
             goto EXIT;
     }
 
+    feaDim = GetHOGDim(IMG_WIDTH_BASE, IMG_HEIGHT_BASE);
     if(feaUsed & FEAT_HOG)
     {
-        if(HOG_DIM != HogFea(hMemBuf, pGray, IMG_WIDTH, IMG_WIDTH, IMG_HEIGHT,pDst))
+        if(feaDim != HogFea(hMemBuf, pGray, IMG_WIDTH_BASE,
+                            IMG_WIDTH_BASE, IMG_HEIGHT_BASE,pDst))
         { 
             rVal = -1;
             goto EXIT;
         }
-        pDst += HOG_DIM;
+        pDst += feaDim;
     }
 
+    feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
     if(feaUsed & FEAT_LBP_16)
     {
-        if(LBP_DIM_16 != LBPH_Fea(hMemBuf, pGray, IMG_WIDTH, IMG_WIDTH,
-                                  IMG_HEIGHT, LBP_RADIUS_2,LBP_NEIGHBOR_16,
-                                  LBP_GRID_X, LBP_GRID_Y, pDst))
+        if(feaDim != LBPH_Fea(hMemBuf, pGray, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
+                              IMG_HEIGHT_BASE, 2 , 16,
+                              LBP_GRID_X, LBP_GRID_Y, pDst))
         {
             rVal = -1;
             goto EXIT;
         }
     }
 
+    feaDim = GetSURFDim();
     if(feaUsed & FEAT_SURF)
     {
-        if(SURF_LEN != SURFFea(hMemBuf, pGray, IMG_WIDTH, IMG_WIDTH, IMG_HEIGHT,pDst))
+        if(feaDim != SURFFea(hMemBuf, pGray, IMG_WIDTH_BASE,
+                             IMG_WIDTH_BASE, IMG_HEIGHT_BASE,pDst))
         { 
             rVal = -1;
             goto EXIT;
         }
-        pDst += SURF_LEN;
+        pDst += feaDim;
     }
     
  EXIT:
@@ -142,7 +148,7 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
         if(pGray)      TMemFree(hMemBuf, pGray);
     }
 
-	if((dstWidth != IMG_WIDTH) || (dstHeight != IMG_HEIGHT))
+	if((dstWidth != IMG_WIDTH_BASE) || (dstHeight != IMG_HEIGHT_BASE))
 	{
 		if(pBGR_scale) TMemFree(hMemBuf, pBGR_scale);
 	}

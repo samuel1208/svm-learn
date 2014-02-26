@@ -6,7 +6,7 @@
 #include <opencv/highgui.h>
 #include "WanHuaLinFea.h"
 #include "HogFea.h"
-#include "svm_config.h"
+#include "LBP_Fea.h"
 #include "svm_feature.h"
 #include "SURFDescriptor.h"
 //#define SHOW_IMG
@@ -52,20 +52,41 @@ int main(int argc, char **argv)
 
     IplImage  *src_img    = NULL;
     IplImage  *__src_img = NULL;
-    IplImage  *resize_img = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT),8,3);
-    IplImage  *hsl_img    = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,3);
-    IplImage  *gray_img   = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,1);
-    IplImage  *gradient_img = cvCreateImage(cvSize(resize_img->width, resize_img->height),8 ,1);
+    IplImage  *resize_img = 0;
+    IplImage  *hsl_img    = 0;
+    IplImage  *gray_img   = 0;
+    IplImage  *gradient_img = 0;
     int *pGradient_x=NULL, *pGradient_y=NULL, *pGradient=NULL;
     
     int fea_used_num = 0;
-    int *pFea_tmp, *pFea = (int *)malloc((WAN_HUA_LIN_DIM + HOG_DIM + LBP_DIM_8 + LBP_DIM_16 ) * sizeof(int));
+    int maxFeaNum = 0;
+    int *pFea_tmp, *pFea =0; 
     // int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_8 | FEAT_LBP_16;
     //int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_16;
     //int feaUsed = FEAT_HOG;
     int feaUsed = FEAT_SURF;
     //int feaUsed = FEAT_LBP_16;
     int i,img_num=0;
+
+    if (argc < 2)
+    {
+        printf("Usage :: extractFea  base_width base_height");
+    }
+
+    int IMG_WIDTH = atoi(argv[1]);
+    int IMG_HEIGHT = atoi(argv[2]);
+    int feaDim = 0;
+
+    maxFeaNum += GetWANDim();
+    maxFeaNum += GetHOGDim(IMG_WIDTH, IMG_HEIGHT) ;
+    maxFeaNum += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+    maxFeaNum += GetSURFDim();
+    pFea = (int *)malloc(maxFeaNum * sizeof(int));
+
+    resize_img = cvCreateImage(cvSize(IMG_WIDTH, IMG_HEIGHT),8,3);
+    hsl_img    = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,3);
+    gray_img   = cvCreateImage(cvSize(resize_img->width, resize_img->height), 8,1);
+    gradient_img=cvCreateImage(cvSize(resize_img->width, resize_img->height),8 ,1);
 
     pGradient_x = (int *)malloc(resize_img->width*resize_img->height* sizeof(int));
     pGradient_y = (int *)malloc(resize_img->width*resize_img->height* sizeof(int));
@@ -113,28 +134,33 @@ int main(int argc, char **argv)
     printf("The feature info: \n");
     if(feaUsed & FEAT_WAN_COLOR)
     {
-        printf("\t WanHuaLin dim: used %d\n", WAN_HUA_LIN_DIM);
-        fea_used_num += WAN_HUA_LIN_DIM;
+        feaDim = GetWANDim();
+        printf("\t WanHuaLin dim: used %d\n", feaDim);
+        fea_used_num += feaDim;
     }
     if(feaUsed & FEAT_HOG)
     {
-        printf("\t HOG dim      : used %d\n", HOG_DIM);
-        fea_used_num += HOG_DIM;
+        feaDim = GetHOGDim(IMG_WIDTH, IMG_HEIGHT);
+        printf("\t HOG dim      : used %d\n", feaDim);
+        fea_used_num += feaDim;
     }
     if(feaUsed & FEAT_LBP_8)
     {
-        printf("\t LBP_8 dim    : used %d\n", LBP_DIM_8);
-        fea_used_num += LBP_DIM_8;
+        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
+        printf("\t LBP_8 dim    : used %d\n", feaDim);
+        fea_used_num += feaDim;
     }
     if(feaUsed & FEAT_LBP_16)
     {
-        printf("\t LBP_16 dim   : used %d\n", LBP_DIM_16);
-        fea_used_num += LBP_DIM_16;
+        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+        printf("\t LBP_16 dim   : used %d\n", feaDim);
+        fea_used_num += feaDim;
     }
     if(feaUsed & FEAT_SURF)
     {
-        printf("\t SURF  dim    : used %d\n", SURF_LEN);
-        fea_used_num += SURF_LEN;
+        feaDim = GetSURFDim();
+        printf("\t SURF  dim    : used %d\n", feaDim);
+        fea_used_num += feaDim;
     }
     printf("\t Total Dim    :      %d\n", fea_used_num);
     printf("---------------------------------------------\n");
@@ -172,7 +198,7 @@ int main(int argc, char **argv)
        
 
         pFea_tmp = pFea;
-
+        feaDim = GetWANDim();
         if(feaUsed & FEAT_WAN_COLOR)
         {
                     // extract WanHuaLin feature
@@ -187,38 +213,44 @@ int main(int argc, char **argv)
                 printf("ERROR :: Error occured in extracting WanHuaLin feature\n ");
                 continue;
             }
-            pFea_tmp += WAN_HUA_LIN_DIM;
+            pFea_tmp += feaDim;
         }
+
         // extract HOG feature	
+        feaDim = GetHOGDim(IMG_WIDTH, IMG_HEIGHT);
         if(feaUsed & FEAT_HOG)
         {
-            if(HOG_DIM != HogFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea_tmp))
+            if(feaDim != HogFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea_tmp))
             {
                 printf("ERROR :: Error occured in extracting HOG feature\n ");
                 continue;
             }
-            pFea_tmp += HOG_DIM;
+            pFea_tmp += feaDim;
         }
 
+        
+        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
         if(feaUsed & FEAT_LBP_16)
         {
-            if(LBP_DIM_16 != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
-                                      LBP_RADIUS_2, LBP_NEIGHBOR_16, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
+            if(feaDim != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
+                                      2, 16, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
             {
                 printf("ERROR :: Error occured in extracting LBP feature\n ");
                 continue;   
             } 
-            pFea_tmp += LBP_DIM_16;
+            pFea_tmp += feaDim;
         }
 
+        
+        feaDim = GetSURFDim();
         if(feaUsed & FEAT_SURF)
         {
-            if(SURF_LEN != SURFFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea_tmp))
+            if(feaDim != SURFFea(NULL, gray_img->imageData, gray_img->widthStep,IMG_WIDTH, IMG_HEIGHT, pFea_tmp))
             {
                 printf("ERROR :: Error occured in extracting SURF feature\n ");
                 continue;
             }
-            pFea_tmp += SURF_LEN;
+            pFea_tmp += feaDim;
         }
 		//{
 		//	FILE *tmp = fopen("../bin/tmp.txt","wb");

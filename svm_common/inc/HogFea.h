@@ -13,12 +13,15 @@ typedef enum __tagGRADIENT_MODE
 extern "C" {
 #endif
 #include "tcomdef.h"
-    int GetGradient(const unsigned char* pGrayImg, int widthStep_src, int *pGradient_x, int *pGradient_y, int widthStep_dst, int width, int height, GRADIENT_MODE mode);
+
+    int GetHOGDim(int width, int height);
+    int GetGradient(const unsigned char* pGrayImg, int widthStep_src, 
+                    int *pGradient_x, int *pGradient_y, int widthStep_dst, 
+                    int width, int height, GRADIENT_MODE mode);
 
     /*return value : the number of HOG features*/
-    int HogFea(THandle hMemBuf, unsigned char *grayImg, int widthStep,int width, int height, int *pHogFea);
-  
-
+    int HogFea(THandle hMemBuf, unsigned char *grayImg, int widthStep,int width,
+               int height, int *pHogFea);
 
 #ifdef __cplusplus
 }

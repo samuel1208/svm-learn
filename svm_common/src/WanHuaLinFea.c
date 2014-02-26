@@ -40,6 +40,11 @@ static const unsigned short g_ByteDivTab[] = {
 	  273,   271,   270,   269,   268,   267,   266,  265,  264,  263,  262,  261,  260,  259,  258,  257
 };
 
+
+int GetWANDim()
+{
+    return 73;
+}
 int WanHuaLinColorFea(unsigned char *pHSL,  int i32LineByte, int i32Width, int i32Height, int *pFea)
 {
     #define COLOR_BIN 73

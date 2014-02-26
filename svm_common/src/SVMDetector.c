@@ -1,40 +1,130 @@
 #include "SVMDetector.h"
 #include "tmem.h"
+#include "svm.h"
 #include "svm_feature.h"
-#include "svm_config.h"
+#include "HogFea.h"
+#include "LBP_Fea.h"
+#include "SURFDescriptor.h"
+#include "WanHuaLinFea.h"
 
-int SVMDetector(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
-                    TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
-                TRECT region, int *label)
+typedef struct __tagSvmDetector
 {
-    return SVMDetector_ex(hMemBuf, pSvmModel, feaUsed,
-                          pBGR, srcWidth, srcHeight, srcWidthStep,
-                          region, label, 0);
+    svm_model *pSvmModel;
+    int width_base;
+    int height_base;
+    int feaUsed;
+    THandle hMemBuf;
+}SvmDetector;
+
+extern svm_model *g_pSvmModel_face;
+static int feaUsed_face = FEAT_HOG;
+static int width_base_face = 48;
+static int height_base_face = 48;
+
+extern svm_model *g_pSvmModel_smile;
+static int feaUsed_smile = FEAT_SURF;
+static int width_base_smile = 48;
+static int height_base_smile = 48;
+
+
+extern svm_model *g_pSvmModel_gesture;
+static int feaUsed_gesture = FEAT_SURF;
+static int width_base_gesture = 48;
+static int height_base_gesture = 48;
+
+THandle SVMDetector_init(THandle hMemBuf, const char *name)
+{
+    SvmDetector *hDetector = 0;
+    
+    hDetector = (SvmDetector *)TMemAlloc(hMemBuf, sizeof(SvmDetector));
+    if (0 == hDetector)
+        return 0;
+    TMemSet(hDetector, 0, sizeof(SvmDetector));
+
+    //// Set the svm model
+    if(strcmp(name,"face") == 0)
+        hDetector->pSvmModel = g_pSvmModel_face;
+    else if(strcmp(name,"smile") == 0)
+        hDetector->pSvmModel = g_pSvmModel_smile;
+    else if(strcmp(name,"gesture") == 0)
+        hDetector->pSvmModel = g_pSvmModel_gesture;
+    if (0 == hDetector->pSvmModel)
+    {
+        TMemFree(hMemBuf, hDetector);
+        hDetector = 0;
+        return 0;
+    }
+
+    /// Set the base Para
+    if(strcmp(name,"face") == 0)
+    {
+        hDetector->width_base = width_base_face;
+        hDetector->height_base = height_base_face;
+        hDetector->feaUsed = feaUsed_face;
+    }
+    else if(strcmp(name,"smile") == 0)
+    {
+        hDetector->width_base = width_base_smile;
+        hDetector->height_base = height_base_smile;
+        hDetector->feaUsed = feaUsed_smile;
+    }
+    else if(strcmp(name,"gesture") == 0)
+    {
+        hDetector->width_base = width_base_gesture;
+        hDetector->height_base = height_base_gesture;
+        hDetector->feaUsed = feaUsed_gesture;
+    }
+    
+    hDetector->hMemBuf = hMemBuf;
+    return hDetector;
 }
-int SVMDetector_ex(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
-                TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
-                TRECT region, int *label, int bIsExtended)
+
+void SVMDetector_uninit(THandle *hDetector)
+{
+    if (*hDetector)
+    {
+        THandle hMemBuf = ((SvmDetector *)(*hDetector))->hMemBuf;
+        TMemFree(hMemBuf, (*hDetector));
+        *hDetector = 0;
+    }        
+}
+
+int SVMDetector_detect(THandle hDetector, 
+                       TUInt8 *pBGR, int srcWidth, int srcHeight, 
+                       int srcWidthStep, TRECT region, int *label)
+{
+    return SVMDetector_detect_ex(hDetector, 
+                                 pBGR, srcWidth, srcHeight, srcWidthStep,
+                                 region, label, 0);
+}
+int SVMDetector_detect_ex(THandle hDetector, 
+                          TUInt8 *pBGR, int srcWidth, int srcHeight,
+                          int srcWidthStep, TRECT region, int *label, 
+                          int bIsExtended)
 {
     int rVal = 0;
     int *pFea = TNull;
     int feaDim = 0;
-    
 
-    if((TNull == pBGR) || (TNull == label))
+    SvmDetector *detector = (SvmDetector *)hDetector;
+    THandle hMemBuf = detector->hMemBuf;
+    int feaUsed = detector->feaUsed;    
+
+    if((TNull == pBGR) || (TNull == label) || (TNull == detector))
     {
         rVal = -1;
         goto EXIT;
     }
     if(feaUsed & FEAT_WAN_COLOR)
-        feaDim += WAN_HUA_LIN_DIM;
+        feaDim += GetWANDim();
     if((feaUsed & FEAT_HOG))
-        feaDim += HOG_DIM;
+        feaDim += GetHOGDim(detector->width_base, detector->height_base);
     if((feaUsed & FEAT_LBP_8))
-        feaDim += LBP_DIM_8;    
+        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);    
     if((feaUsed & FEAT_LBP_16))
-        feaDim += LBP_DIM_16;
+        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
     if((feaUsed & FEAT_SURF))
-        feaDim += SURF_LEN;
+        feaDim += GetSURFDim();
     
     pFea = (int *)TMemAlloc(hMemBuf, sizeof(*pFea)* feaDim);
     if  (TNull == pFea)
@@ -68,19 +158,21 @@ int SVMDetector_ex(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
         region.bottom = dstHeight;
         region.right = dstWidth;
         rVal = svm_feature(hMemBuf, extendBuf, dstWidth, dstHeight, 
-                           dstWidth*3, region, pFea, feaUsed);
+                           dstWidth*3, region, pFea, feaUsed,
+                           detector->width_base, detector->height_base);
         TMemFree(hMemBuf, extendBuf);
     }
     else
         //get feature
         rVal = svm_feature(hMemBuf, pBGR, srcWidth, srcHeight, 
-                           srcWidthStep, region, pFea, feaUsed);
+                           srcWidthStep, region, pFea, feaUsed,
+                           detector->width_base, detector->height_base);
     if(0 != rVal)
         goto EXIT; 
 
     //predict    
     // time_stamp(0,"svm_predict");
-    rVal = SvmPredict(hMemBuf, pSvmModel, pFea, feaDim, label);
+    rVal = SvmPredict(hMemBuf, detector->pSvmModel, pFea, feaDim, label);
     if(0 != rVal)
         goto EXIT;  
     // time_stamp(1, "svm_predict");

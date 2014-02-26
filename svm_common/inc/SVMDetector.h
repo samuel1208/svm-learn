@@ -3,18 +3,22 @@
 
 
 #include"tcomdef.h"
-#include "svm.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    int SVMDetector_ex(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
-                       TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
-                       TRECT region, int *label, int bIsExtended);
+    THandle SVMDetector_init(THandle hMemBuf, const char *name);
 
-    int SVMDetector(THandle hMemBuf, svm_model *pSvmModel,int feaUsed,
-                    TUInt8 *pBGR, int srcWidth, int srcHeight, int srcWidthStep,
-                    TRECT region, int *label);
+    void SVMDetector_uninit(THandle *hDetector);
+
+    int SVMDetector_detect_ex(THandle hMemBuf, 
+                              TUInt8 *pBGR, int srcWidth, int srcHeight,
+                              int srcWidthStep, TRECT region, int *label,
+                              int bIsExtended);
+
+    int SVMDetector_detect(THandle hMemBuf, 
+                           TUInt8 *pBGR, int srcWidth, int srcHeight,
+                           int srcWidthStep, TRECT region, int *label);
 
 #ifdef __cplusplus
 }
