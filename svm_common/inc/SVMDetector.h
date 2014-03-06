@@ -11,14 +11,18 @@ extern "C" {
 
     void SVMDetector_uninit(THandle *hDetector);
 
-    int SVMDetector_detect_ex(THandle hMemBuf, 
-                              TUInt8 *pBGR, int srcWidth, int srcHeight,
-                              int srcWidthStep, TRECT region, int *label,
-                              int bIsExtended);
-
+    /*
+      
+     */
+    typedef enum{
+        FORMAT_BGR,
+        FORMAT_GRAY
+    }COLOR_FORMAT;
+    
     int SVMDetector_detect(THandle hMemBuf, 
-                           TUInt8 *pBGR, int srcWidth, int srcHeight,
-                           int srcWidthStep, TRECT region, int *label);
+                           TUInt8 *pData, COLOR_FORMAT format,
+                           int srcWidth, int srcHeight, int srcWidthStep, 
+                           TRECT region, int *label);
 
 #ifdef __cplusplus
 }

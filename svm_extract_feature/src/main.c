@@ -44,6 +44,17 @@ static int checkGradientImg(int *pGrad_x, int *pGrad_y, int *pGrad, unsigned cha
 }
 #endif
 
+void usage()
+{
+    printf("\n******************************************************\n");
+    printf("usage:\n");
+    printf("\textract_feature    base_w base_h feature label infile  outfile\n");
+    printf("\tPara label : 1 or 0 for  two-cass\n");
+    printf("\tPara infile   : include the absolut path for each image\n");
+    printf("\tPara outfile  : the absolut path of output file\n");
+    printf("******************************************************\n\n");
+    
+}
 int main(int argc, char **argv)
 {
     FILE *file = NULL, *file_image = NULL, *file_save=NULL;
@@ -61,22 +72,32 @@ int main(int argc, char **argv)
     int fea_used_num = 0;
     int maxFeaNum = 0;
     int *pFea_tmp, *pFea =0; 
-    // int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_8 | FEAT_LBP_16;
-    //int feaUsed = FEAT_WAN_COLOR | FEAT_HOG | FEAT_LBP_16;
-    //int feaUsed = FEAT_HOG;
-    int feaUsed = FEAT_SURF;
-    //int feaUsed = FEAT_LBP_16;
+    int feaUsed = -1;
     int i,img_num=0;
+
+    int IMG_WIDTH = 0;
+    int IMG_HEIGHT = 1;
+    int feaDim = 0;
 
     if (argc < 2)
     {
-        printf("Usage :: extractFea  base_width base_height");
+        usage();
+        goto EXIT;
     }
 
-    int IMG_WIDTH = atoi(argv[1]);
-    int IMG_HEIGHT = atoi(argv[2]);
-    int feaDim = 0;
-
+    if (0 == strcmp(argv[3], "surf"))
+        feaUsed = FEAT_SURF;
+    else if (0 == strcmp(argv[3], "wan"))
+        feaUsed = FEAT_WAN_COLOR;
+    else if (0 == strcmp(argv[3], "hog"))
+        feaUsed = FEAT_HOG;
+    else if (0 == strcmp(argv[3], "lbp8"))
+        feaUsed = FEAT_LBP_8;
+    else if (0 == strcmp(argv[3], "lbp16"))
+        feaUsed = FEAT_LBP_16;
+    
+    IMG_WIDTH = atoi(argv[1]);
+    IMG_HEIGHT = atoi(argv[2]);
     maxFeaNum += GetWANDim();
     maxFeaNum += GetHOGDim(IMG_WIDTH, IMG_HEIGHT) ;
     maxFeaNum += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
@@ -99,23 +120,17 @@ int main(int argc, char **argv)
         goto EXIT;
     }
     
-    if(argc < 4)
+    if(argc < 6)
     {
-        printf("\n******************************************************\n");
-        printf("usage:\n");
-        printf("\textract_feature  label  infile  outfile\n");
-        printf("\tPara label : 1 or 0 for  two-cass\n");
-        printf("\tPara infile   : include the absolut path for each image\n");
-		printf("\tPara outfile  : the absolut path of output file\n");
-        printf("******************************************************\n\n");
+        usage();
         goto EXIT;
     }
 
-    label = atoi(argv[1]);
+    label = atoi(argv[4]);
     printf("The label of this processing is %d\n", label);
-    sprintf(save_path, "%s", argv[3]);
+    sprintf(save_path, "%s", argv[6]);
 
-    file = fopen(argv[2], "r");
+    file = fopen(argv[5], "r");
     if(NULL == file)
     {
         printf("ERROR :: The input file not exist\n");
@@ -234,6 +249,19 @@ int main(int argc, char **argv)
         {
             if(feaDim != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
                                       2, 16, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
+            {
+                printf("ERROR :: Error occured in extracting LBP feature\n ");
+                continue;   
+            } 
+            pFea_tmp += feaDim;
+        }
+
+        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
+        if(feaUsed & FEAT_LBP_8)
+        {
+            if(feaDim != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep,
+                                  IMG_WIDTH, IMG_HEIGHT,
+                                  1, 8, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
             {
                 printf("ERROR :: Error occured in extracting LBP feature\n ");
                 continue;   

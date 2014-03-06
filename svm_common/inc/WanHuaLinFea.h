@@ -14,9 +14,6 @@ extern "C" {
     
     int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, 
                   int lineBytesRGB, int lineBytesHSL);
-    int  ScaleImg3(unsigned char *pSrc, int srcWidth, int srcHeight, 
-                   int srcWidthStep,  unsigned char *pDst, int dstWidth,
-                   int dstHeight, int dstWidthStep);
     
     int  BGRtoGray(unsigned char *pBGR, int width, int height, int widthStep, 
                    unsigned char *pGray);

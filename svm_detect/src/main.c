@@ -84,7 +84,7 @@ int main(int argc, char **argv)
         rect.bottom = __src_img->height;
         rect.right = __src_img->width;
 
-        rval = SVMDetector_detect(detector, __src_img_BGR->imageData,
+        rval = SVMDetector_detect(detector, __src_img_BGR->imageData,FORMAT_BGR,
                                   __src_img_BGR->width, __src_img_BGR->height,
                                   __src_img_BGR->widthStep, rect, &label);
         if(0 == rval)

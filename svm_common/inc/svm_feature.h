@@ -19,6 +19,11 @@ extern "C" {
                     int srcWidthStep, TRECT region, int *pFea, int feaUsed,
                     int IMG_WIDTH_BASE, int IMG_HEIGHT_BASE);
 
+    
+    int svm_feature_gray(THandle hMemBuf,TUInt8 *pGray, int srcWidth, 
+                         int srcHeight, int srcWidthStep, 
+                         TRECT region, int *pFea, int feaUsed,
+                         int IMG_WIDTH_BASE, int IMG_HEIGHT_BASE);
 
 
 

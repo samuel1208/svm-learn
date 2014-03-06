@@ -295,39 +295,6 @@ int  RGBtoHSL(unsigned char *pRGB, unsigned char *pHSL, int rows, int cols, int 
     return 0;
 }
 
-int  ScaleImg3(unsigned char *pSrc, int srcWidth, int srcHeight, int srcWidthStep,
-               unsigned char *pDst, int dstWidth, int dstHeight, int dstWidthStep)
-{
-    int w,h, index_x, index_y;
-    float scale_x, scale_y;
-    unsigned char *pData;
-    
-    if((TNull == pSrc)||(TNull == pDst))
-        return -1;
-    
-    scale_x = srcWidth*1.0f/dstWidth;
-    scale_y = srcHeight*1.0f/dstHeight;
-
-    pData = pDst;
-    for(h=0; h<dstHeight; h++)
-    {
-        index_y = (int)(h*scale_y/* + 0.5f*/); //the same to opencv CV_INTER_NN
-        index_y = TMIN(index_y, srcHeight-1);
-        
-        for(w=0; w<dstWidth; w++)
-        {
-            index_x = (int)(w*scale_x/* + 0.5f*/);
-            index_x = TMIN(index_x, srcWidth-1);
-            pData[3*w] = pSrc[index_y*srcWidthStep + index_x*3];
-            pData[3*w+1] = pSrc[index_y*srcWidthStep + index_x*3+1];
-            pData[3*w+2] = pSrc[index_y*srcWidthStep + index_x*3+2];
-        }
-        pData += dstWidthStep;
-    }
-    return 0;
-}
-
-
 int  BGRtoGray(unsigned char *pBGR, int width, int height, int widthStep, unsigned char *pGray)
 {
     int w,h;
