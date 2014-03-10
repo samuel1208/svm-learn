@@ -49,6 +49,7 @@ void usage()
     printf("\n******************************************************\n");
     printf("usage:\n");
     printf("\textract_feature    base_w base_h feature label infile  outfile\n");
+    printf("\t\tSupported Fea: [surf, lbp8, lbp16, wan, hog] \n");
     printf("\tPara label : 1 or 0 for  two-cass\n");
     printf("\tPara infile   : include the absolut path for each image\n");
     printf("\tPara outfile  : the absolut path of output file\n");

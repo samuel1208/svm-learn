@@ -14,7 +14,14 @@
 
 int GetLBPDim(int neighbor , int lbp_grid_x, int lbp_grid_y)
 {
+#ifdef LBP_USE_UNIFORM_2
+    if (8==neighbor)
+        return 59*lbp_grid_x *lbp_grid_y;
+    else if (16==neighbor)
+        return 243*lbp_grid_x *lbp_grid_y;
+#else
     return (neighbor+2)* lbp_grid_x *lbp_grid_y;
+#endif
 }
 
 
@@ -31,10 +38,17 @@ static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height,
     if((TNull == pImg) || (TNull == pLBPImg))
         return -1;
 
+#ifdef LBP_USE_UNIFORM_2
     if(8 == neighbor)
-        pLookupTable = pLBP_lookUP_table_8;
+        pLookupTable = pLBP_lookUP_table_8_u2;
 	else if(16 == neighbor)
-        pLookupTable = pLBP_lookUP_table_16;
+        pLookupTable = pLBP_lookUP_table_16_u2;
+#else
+    if(8 == neighbor)
+        pLookupTable = pLBP_lookUP_table_8_roi_u2;
+	else if(16 == neighbor)
+        pLookupTable = pLBP_lookUP_table_16_roi_u2;
+#endif
     else 
         return -1;
 
@@ -187,7 +201,15 @@ int LBPH_Fea(THandle hMem, unsigned char *pSrcImg, int widthStep,
     
     grid_width = width_lbp / grid_x;
     grid_height = height_lbp / grid_y;
+
+#ifdef LBP_USE_UNIFORM_2
+    if (8==neighbor)
+        histBin = 59;
+    else if (16==neighbor)
+        histBin = 243;
+#else
     histBin = neighbor+2;
+#endif
     nFeaNum = grid_x*grid_y*histBin;
     
     for(y=0; y<grid_y; y++)

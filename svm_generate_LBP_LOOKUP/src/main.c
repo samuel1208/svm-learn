@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         unsigned int val = 0;
         unsigned int val_base = 0;
         int highestBit= 0;
-        label ++;
+        label++;
         //get the base value
         for(j=0; j<neighbor; j++)
         {
@@ -61,15 +61,20 @@ int main(int argc, char **argv)
             val += 1;
         }
         pLabel[val] = label;
+
+
         for(j=1; j<neighbor; j++)
         {
+#if 1 //Don't use ori_invariance property
+            label++;
+#endif
             // make a circle move
             highestBit = val >> (neighbor-1);
             val = val<<1;
             val = (val & val_base) + highestBit;
             pLabel[val] = label;
         }
-        
+
     }
     label ++;
     pLabel[(1<<neighbor)-1] = label;
@@ -81,7 +86,7 @@ int main(int argc, char **argv)
     }
     
     //
-    sprintf(outputPath, "../../svm_common/inc/LBP_lookup.h");
+    sprintf(outputPath, "../../LBP_lookup.h");
     file = fopen(outputPath, "w");
     if(NULL == file)
     {
@@ -95,7 +100,7 @@ int main(int argc, char **argv)
     fprintf(file, "#ifdef __cplusplus\n");
     fprintf(file, "extern \"C\"{\n");
     fprintf(file, "#endif\n");
-    fprintf(file,"char pLBP_lookUP_table_%d[]={\n", neighbor);
+    fprintf(file,"unsigned char pLBP_lookUP_table_%d[]={\n", neighbor);
     fprintf(file,"  %3d", pLabel[0]);
     for(i=1; i<(1<<neighbor); i++)
     {
