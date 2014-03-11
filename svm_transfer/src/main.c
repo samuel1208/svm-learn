@@ -349,11 +349,11 @@ static int readTrainModel(FILE *srcFile, FILE *file_c, char *suffix)
     fprintf(file_c, "\tgamma_%s}; \n", suffix);
     fprintf(file_c, "#else\n");
     fprintf(file_c, "static svm_parameter svm_para_%s = { \n", suffix);
-    fprintf(file_c, "\t.kernel_type = kernel_type_%s, \n", suffix);
-    fprintf(file_c, "\t.degree = degree_%s, \n", suffix);
-    fprintf(file_c, "\t.svm_type = svm_type_%s, \n", suffix);
-    fprintf(file_c, "\t.coef0 = coef0_%s, \n", suffix);
-    fprintf(file_c, "\t.gamma = gamma_%s}; \n", suffix);
+    fprintf(file_c, "\tkernel_type : kernel_type_%s, \n", suffix);
+    fprintf(file_c, "\tdegree : degree_%s, \n", suffix);
+    fprintf(file_c, "\tsvm_type : svm_type_%s, \n", suffix);
+    fprintf(file_c, "\tcoef0 : coef0_%s, \n", suffix);
+    fprintf(file_c, "\tgamma : gamma_%s}; \n", suffix);
     fprintf(file_c, "#endif\n");
 
     // read sv_coef and SV
@@ -484,20 +484,20 @@ static int readTrainModel(FILE *srcFile, FILE *file_c, char *suffix)
     fprintf(file_c, "\tsvm_para_%s};\n",suffix);  
     fprintf(file_c, "#else\n"); 
     fprintf(file_c, "svm_model g_svmModel_%s_={\n",suffix); 
-    fprintf(file_c, "\t.nr_class = nr_class_%s,\n",suffix);  
-    fprintf(file_c, "\t.l = total_sv_%s,\n",suffix);  
-    fprintf(file_c, "\t.rho = pRho_%s,\n",suffix);  
-    fprintf(file_c, "\t.probB = pProbB_%s,\n",suffix);  
-    fprintf(file_c, "\t.probA = pProbA_%s,\n",suffix);  
-    fprintf(file_c, "\t.SV = ppSvm_node_%s,\n",suffix);  
-    fprintf(file_c, "\t.sv_coef = ppSv_Coef_%s,\n",suffix);  
-    fprintf(file_c, "\t.label = pLabel_%s,\n",suffix);  
-    fprintf(file_c, "\t.nSV = pNr_sv_%s,\n",suffix);  
-    fprintf(file_c, "\t.free_sv = free_sv_%s,\n",suffix);  
-    fprintf(file_c, "\t.pMinMaxFeaVal = pMinMaxFeaVal_%s,\n",suffix);  
-    fprintf(file_c, "\t.feaLower = i32MinRange_%s,\n",suffix);  
-    fprintf(file_c, "\t.feaUpper = i32MaxRange_%s,\n",suffix);  
-    fprintf(file_c, "\t.param = svm_para_%s};\n",suffix);  
+    fprintf(file_c, "\tnr_class : nr_class_%s,\n",suffix);  
+    fprintf(file_c, "\tl : total_sv_%s,\n",suffix);  
+    fprintf(file_c, "\trho : pRho_%s,\n",suffix);  
+    fprintf(file_c, "\tprobB : pProbB_%s,\n",suffix);  
+    fprintf(file_c, "\tprobA : pProbA_%s,\n",suffix);  
+    fprintf(file_c, "\tSV : ppSvm_node_%s,\n",suffix);  
+    fprintf(file_c, "\tsv_coef : ppSv_Coef_%s,\n",suffix);  
+    fprintf(file_c, "\tlabel : pLabel_%s,\n",suffix);  
+    fprintf(file_c, "\tnSV : pNr_sv_%s,\n",suffix);  
+    fprintf(file_c, "\tfree_sv : free_sv_%s,\n",suffix);  
+    fprintf(file_c, "\tpMinMaxFeaVal : pMinMaxFeaVal_%s,\n",suffix);  
+    fprintf(file_c, "\tfeaLower : i32MinRange_%s,\n",suffix);  
+    fprintf(file_c, "\tfeaUpper : i32MaxRange_%s,\n",suffix);  
+    fprintf(file_c, "\tparam : svm_para_%s};\n",suffix);  
     fprintf(file_c, "#endif \n\n"); 
     
     fprintf(file_c, "svm_model *g_pSvmModel_%s=&g_svmModel_%s_;\n",suffix,suffix);
