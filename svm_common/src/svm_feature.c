@@ -153,6 +153,7 @@ int svm_feature_gray(THandle hMemBuf,TUInt8 *pGray, int srcWidth, int srcHeight,
         }
     }
 
+    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
     if(feaUsed & FEAT_LBP_8)
     {
         if(feaDim != LBPH_Fea(hMemBuf, pGray_scale, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
@@ -302,6 +303,7 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
         }
     }
 
+    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
     if(feaUsed & FEAT_LBP_8)
     {
         if(feaDim != LBPH_Fea(hMemBuf, pGray, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
