@@ -141,7 +141,7 @@ int svm_feature_gray(THandle hMemBuf,TUInt8 *pGray, int srcWidth, int srcHeight,
         pDst += feaDim;
     }
 
-    feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+    feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 0);
     if(feaUsed & FEAT_LBP_16)
     {
         if(feaDim != LBPH_Fea(hMemBuf, pGray_scale, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
@@ -153,7 +153,7 @@ int svm_feature_gray(THandle hMemBuf,TUInt8 *pGray, int srcWidth, int srcHeight,
         }
     }
 
-    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
+    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 0);
     if(feaUsed & FEAT_LBP_8)
     {
         if(feaDim != LBPH_Fea(hMemBuf, pGray_scale, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
@@ -291,7 +291,7 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
         pDst += feaDim;
     }
 
-    feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+    feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 0);
     if(feaUsed & FEAT_LBP_16)
     {
         if(feaDim != LBPH_Fea(hMemBuf, pGray, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
@@ -302,13 +302,36 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
             goto EXIT;
         }
     }
+    feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 1);
+    if(feaUsed & FEAT_LBP_OV_16)
+    {
+        if(feaDim != LBPH_Fea_OV(hMemBuf, pGray, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
+                                 IMG_HEIGHT_BASE, 2 , 16,
+                                 LBP_GRID_X, LBP_GRID_Y, pDst))
+        {
+            rVal = -1;
+            goto EXIT;
+        }
+    }
 
-    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
+    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 0);
     if(feaUsed & FEAT_LBP_8)
     {
         if(feaDim != LBPH_Fea(hMemBuf, pGray, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
                               IMG_HEIGHT_BASE, 1 , 8,
                               LBP_GRID_X, LBP_GRID_Y, pDst))
+        {
+            rVal = -1;
+            goto EXIT;
+        }
+    }
+
+    feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 1);
+    if(feaUsed & FEAT_LBP_OV_8)
+    {
+        if(feaDim != LBPH_Fea_OV(hMemBuf, pGray, IMG_WIDTH_BASE, IMG_WIDTH_BASE,
+                                 IMG_HEIGHT_BASE, 1 , 8,
+                                 LBP_GRID_X, LBP_GRID_Y, pDst))
         {
             rVal = -1;
             goto EXIT;

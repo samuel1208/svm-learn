@@ -12,8 +12,15 @@
 */
 #define LBP_MAX_RADIUS (3)
 
-int GetLBPDim(int neighbor , int lbp_grid_x, int lbp_grid_y)
+int GetLBPDim(int neighbor , int lbp_grid_x, int lbp_grid_y, int isOV)
 {
+    if (1 == isOV)
+    {
+        lbp_grid_x = lbp_grid_x*2 -1;
+        lbp_grid_y = lbp_grid_y*2 -1;
+    }
+    
+        
 #ifdef LBP_USE_UNIFORM_2
     if (8==neighbor)
         return 59*lbp_grid_x *lbp_grid_y;
@@ -31,7 +38,7 @@ static int getLBPImg(unsigned char *pImg, int widthStep, int width, int height,
     const float pi = 3.141593f;
     int n, w, h;
     unsigned char *pSrc;
-    char *pLookupTable = TNull;
+    unsigned char *pLookupTable = TNull;
     int *pDst;
     unsigned char val_c;
     unsigned int  val_lbp;
@@ -139,32 +146,20 @@ int LBPH_Fea(THandle hMem, unsigned char *pSrcImg, int widthStep,
     
     int *pLBPImg = TNull;
     if((TNull == pSrcImg) || (TNull == pFea))
-    {
-           nFeaNum = 0;
-           goto EXIT;
-    }
+        goto EXIT;
 
     if((grid_x<1)||(grid_x>width) || (grid_y<1) || (grid_y>height))
-    {
-           nFeaNum = 0;
-           goto EXIT;
-    }
+        goto EXIT;
 
     width_lbp = width - 2*LBP_MAX_RADIUS;
     height_lbp = height - 2*LBP_MAX_RADIUS;
     pLBPImg = (int *)TMemAlloc(hMem, (width_lbp) * (height_lbp) * sizeof(int));
     if(TNull == pLBPImg)
-    {
-        nFeaNum = 0;
         goto EXIT;
-    }
         
      if( 0 != getLBPImg(pSrcImg, widthStep, width, height,
-                           pLBPImg, width_lbp, height_lbp, radius, neighbor))
-    {
-           nFeaNum = 0;
-           goto EXIT;
-    }
+                        pLBPImg, width_lbp, height_lbp, radius, neighbor))
+         goto EXIT;
     
      /*      
 	{	
@@ -210,7 +205,6 @@ int LBPH_Fea(THandle hMem, unsigned char *pSrcImg, int widthStep,
 #else
     histBin = neighbor+2;
 #endif
-    nFeaNum = grid_x*grid_y*histBin;
     
     for(y=0; y<grid_y; y++)
     {
@@ -219,13 +213,71 @@ int LBPH_Fea(THandle hMem, unsigned char *pSrcImg, int widthStep,
             if(0 != getBlockLBPH(pLBPImg+(y*grid_height*width_lbp + x*grid_width),
                                  width_lbp, grid_width, grid_height,
                                  pFea+(histBin*(y*grid_x+x)), histBin))
-            {
-                nFeaNum = 0;
                 goto EXIT;
-            }
         }
     }
+
+    nFeaNum = GetLBPDim(neighbor , grid_x, grid_y, 0);
+ EXIT:
+    if(pLBPImg) TMemFree(hMem, pLBPImg);
+    return nFeaNum;
+}
+
+int LBPH_Fea_OV(THandle hMem, unsigned char *pSrcImg, int widthStep,
+                int width, int height, int radius, int neighbor, 
+                int grid_x, int grid_y, int *pFea)
+{
+    int nFeaNum = 0;
+    int x, y;
+    int grid_width, grid_height;
+    int width_lbp, height_lbp;
+    int histBin;
+    int grid_x_ov, grid_y_ov;
     
+    int *pLBPImg = TNull;
+    if((TNull == pSrcImg) || (TNull == pFea))
+        goto EXIT;
+
+    if((grid_x<1)||(grid_x>width) || (grid_y<1) || (grid_y>height))
+        goto EXIT;
+
+    width_lbp = width - 2*LBP_MAX_RADIUS;
+    height_lbp = height - 2*LBP_MAX_RADIUS;
+    pLBPImg = (int *)TMemAlloc(hMem, (width_lbp) * (height_lbp) * sizeof(int));
+    if(TNull == pLBPImg)
+        goto EXIT;
+        
+    if( 0 != getLBPImg(pSrcImg, widthStep, width, height,
+                       pLBPImg, width_lbp, height_lbp, radius, neighbor))
+        goto EXIT;
+    
+    grid_width = width_lbp / grid_x;
+    grid_height = height_lbp / grid_y;
+
+#ifdef LBP_USE_UNIFORM_2
+    if (8==neighbor)
+        histBin = 59;
+    else if (16==neighbor)
+        histBin = 243;
+#else
+    histBin = neighbor+2;
+#endif
+    
+    grid_x_ov = 2 * grid_x -1;
+    grid_y_ov = 2 * grid_y -1;
+    for(y=0; y<grid_y_ov; y++)
+    {
+        for(x=0; x<grid_x_ov; x++)
+        {
+            int *ptr = pLBPImg + y*(grid_height/2)*width_lbp + x*grid_width/2;
+            if(0 != getBlockLBPH(ptr,
+                                 width_lbp, grid_width, grid_height,
+                                 pFea+(histBin*(y*grid_x_ov+x)), histBin))
+                goto EXIT;
+        }
+    }
+
+    nFeaNum = GetLBPDim(neighbor , grid_x, grid_y, 1);
  EXIT:
     if(pLBPImg) TMemFree(hMem, pLBPImg);
     return nFeaNum;

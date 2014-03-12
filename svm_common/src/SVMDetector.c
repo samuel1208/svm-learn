@@ -150,9 +150,13 @@ int SVMDetector_detect_gray(THandle hDetector,
     if((feaUsed & FEAT_HOG))
         feaDim += GetHOGDim(detector->width_base, detector->height_base);
     if((feaUsed & FEAT_LBP_8))
-        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);    
+        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 0);    
     if((feaUsed & FEAT_LBP_16))
-        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 0);
+    if((feaUsed & FEAT_LBP_OV_8))
+        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 1);    
+    if((feaUsed & FEAT_LBP_OV_16))
+        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 1);
     if((feaUsed & FEAT_SURF))
         feaDim += GetSURFDim();
     
@@ -206,9 +210,13 @@ static int SVMDetector_detect_ex(THandle hDetector,
     if((feaUsed & FEAT_HOG))
         feaDim += GetHOGDim(detector->width_base, detector->height_base);
     if((feaUsed & FEAT_LBP_8))
-        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);    
+        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 0);    
+    if((feaUsed & FEAT_LBP_OV_8))
+        feaDim += GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 1);    
     if((feaUsed & FEAT_LBP_16))
-        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 0);
+    if((feaUsed & FEAT_LBP_OV_16))
+        feaDim += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 1);
     if((feaUsed & FEAT_SURF))
         feaDim += GetSURFDim();
     

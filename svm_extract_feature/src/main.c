@@ -49,7 +49,7 @@ void usage()
     printf("\n******************************************************\n");
     printf("usage:\n");
     printf("\textract_feature    base_w base_h feature label infile  outfile\n");
-    printf("\t\tSupported Fea: [surf, lbp8, lbp16, wan, hog] \n");
+    printf("\t\tSupported Fea: [surf, lbp8, lbp16, lbpov8, lbp16, wan, hog] \n");
     printf("\tPara label : 1 or 0 for  two-cass\n");
     printf("\tPara infile   : include the absolut path for each image\n");
     printf("\tPara outfile  : the absolut path of output file\n");
@@ -96,12 +96,16 @@ int main(int argc, char **argv)
         feaUsed = FEAT_LBP_8;
     else if (0 == strcmp(argv[3], "lbp16"))
         feaUsed = FEAT_LBP_16;
+    else if (0 == strcmp(argv[3], "lbpov8"))
+        feaUsed = FEAT_LBP_OV_8;
+    else if (0 == strcmp(argv[3], "lbpov16"))
+        feaUsed = FEAT_LBP_OV_16;
     
     IMG_WIDTH = atoi(argv[1]);
     IMG_HEIGHT = atoi(argv[2]);
     maxFeaNum += GetWANDim();
     maxFeaNum += GetHOGDim(IMG_WIDTH, IMG_HEIGHT) ;
-    maxFeaNum += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+    maxFeaNum += GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 1);
     maxFeaNum += GetSURFDim();
     pFea = (int *)malloc(maxFeaNum * sizeof(int));
 
@@ -162,14 +166,26 @@ int main(int argc, char **argv)
     }
     if(feaUsed & FEAT_LBP_8)
     {
-        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
+        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 0);
         printf("\t LBP_8 dim    : used %d\n", feaDim);
         fea_used_num += feaDim;
     }
     if(feaUsed & FEAT_LBP_16)
     {
-        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 0);
         printf("\t LBP_16 dim   : used %d\n", feaDim);
+        fea_used_num += feaDim;
+    }
+    if(feaUsed & FEAT_LBP_OV_8)
+    {
+        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 1);
+        printf("\t LBP_OV_8 dim    : used %d\n", feaDim);
+        fea_used_num += feaDim;
+    }
+    if(feaUsed & FEAT_LBP_OV_16)
+    {
+        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 1);
+        printf("\t LBP_OV_16 dim   : used %d\n", feaDim);
         fea_used_num += feaDim;
     }
     if(feaUsed & FEAT_SURF)
@@ -245,7 +261,7 @@ int main(int argc, char **argv)
         }
 
         
-        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y);
+        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 0);
         if(feaUsed & FEAT_LBP_16)
         {
             if(feaDim != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
@@ -257,12 +273,39 @@ int main(int argc, char **argv)
             pFea_tmp += feaDim;
         }
 
-        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y);
+        feaDim = GetLBPDim(16, LBP_GRID_X, LBP_GRID_Y, 1);
+        if(feaUsed & FEAT_LBP_OV_16)
+        {
+            if(feaDim != LBPH_Fea_OV(NULL, gray_img->imageData, 
+                                     gray_img->widthStep, IMG_WIDTH, IMG_HEIGHT,
+                                     2, 16, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
+            {
+                printf("ERROR :: Error occured in extracting LBP feature\n ");
+                continue;   
+            } 
+            pFea_tmp += feaDim;
+        }
+
+        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 0);
         if(feaUsed & FEAT_LBP_8)
         {
             if(feaDim != LBPH_Fea(NULL, gray_img->imageData, gray_img->widthStep,
                                   IMG_WIDTH, IMG_HEIGHT,
                                   1, 8, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
+            {
+                printf("ERROR :: Error occured in extracting LBP feature\n ");
+                continue;   
+            } 
+            pFea_tmp += feaDim;
+        }
+
+        feaDim = GetLBPDim(8, LBP_GRID_X, LBP_GRID_Y, 1);
+        if(feaUsed & FEAT_LBP_OV_8)
+        {
+            if(feaDim != LBPH_Fea_OV(NULL, gray_img->imageData, 
+                                     gray_img->widthStep,
+                                     IMG_WIDTH, IMG_HEIGHT,
+                                     1, 8, LBP_GRID_X, LBP_GRID_Y, pFea_tmp))
             {
                 printf("ERROR :: Error occured in extracting LBP feature\n ");
                 continue;   
