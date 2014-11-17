@@ -15,7 +15,7 @@ extern "C" {
                  int grid_x, int grid_y, int *pFea);
     int LBPH_Fea_OV(THandle hMem, unsigned char *pSrcImg, int widthStep,
                     int width, int height, int radius, int neighbor, 
-                    int grid_x, int grid_y, int *pFea)
+                    int grid_x, int grid_y, int *pFea);
 
 
 #ifdef __cplusplus

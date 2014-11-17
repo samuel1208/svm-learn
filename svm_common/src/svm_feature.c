@@ -265,7 +265,8 @@ int svm_feature(THandle hMemBuf,TUInt8 *pBGR, int srcWidth, int srcHeight,
     }
 
     if((feaUsed & FEAT_SURF)||(feaUsed & FEAT_HOG) 
-       || (feaUsed & FEAT_LBP_16) || (feaUsed & FEAT_LBP_8))
+       || (feaUsed & FEAT_LBP_16) || (feaUsed & FEAT_LBP_8)
+       || (feaUsed & FEAT_LBP_OV_16) || (feaUsed & FEAT_LBP_OV_8))
     {
         pGray = (TUInt8 *)TMemAlloc(hMemBuf, sizeof(TUInt8)*IMG_WIDTH_BASE*IMG_HEIGHT_BASE);
         if(TNull == pGray)

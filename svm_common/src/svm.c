@@ -8,6 +8,7 @@ static int __featureScale(int *pFeaSrc, svm_node *pNode, int *pMinMax, int lower
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x);
 static double __svm_predict_values(THandle hMemBuf, const svm_model *model, const svm_node *x, double* dec_values);
 static double _kFunction(const svm_node *x, const svm_node *y, const svm_parameter* param);
+static double dot(const svm_node *px, const svm_node *py);
 
 static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_node *x)
 {
@@ -28,10 +29,34 @@ static double __svm_predict(THandle hMemBuf, const svm_model *model, const svm_n
 }
 
 
+static double dot(const svm_node *px, const svm_node *py)
+{
+	double sum = 0;
+	while(px->index != -1 && py->index != -1)
+	{
+		if(px->index == py->index)
+		{
+			sum += ((px->value * py->value)>>SVM_BIT_MOVE);
+			++px;
+			++py;
+		}
+		else
+		{
+			if(px->index > py->index)
+				++py;
+			else
+				++px;
+		}			
+	}
+	return sum;
+}
+
 static double _kFunction(const svm_node *x, const svm_node *y, const svm_parameter* param)
 {
 	switch(param->kernel_type)
 	{
+        case LINEAR:
+			return dot(x,y);
 		case RBF:
 		{
 			TInt64 sum = 0;

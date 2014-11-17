@@ -16,6 +16,12 @@ typedef struct __tagSvmDetector
     THandle hMemBuf;
 }SvmDetector;
 
+extern svm_model *g_pSvmModel_scene;
+static int feaUsed_scene = FEAT_HOG;
+static int width_base_scene = 64;
+static int height_base_scene = 64;
+
+
 extern svm_model *g_pSvmModel_face;
 static int feaUsed_face = FEAT_HOG;
 static int width_base_face = 48;
@@ -26,14 +32,13 @@ static int feaUsed_smile = FEAT_SURF;
 static int width_base_smile = 48;
 static int height_base_smile = 48;
 
-
 extern svm_model *g_pSvmModel_gesture;
 static int feaUsed_gesture = FEAT_SURF;
 static int width_base_gesture = 48;
 static int height_base_gesture = 48;
 
 extern svm_model *g_pSvmModel_gender;
-static int feaUsed_gender = FEAT_SURF;
+static int feaUsed_gender = FEAT_LBP_OV_8;
 static int width_base_gender = 48;
 static int height_base_gender = 48;
 
@@ -65,6 +70,8 @@ THandle SVMDetector_init(THandle hMemBuf, const char *name)
         hDetector->pSvmModel = g_pSvmModel_gesture;
 	else if(strcmp(name,"gender") == 0)
         hDetector->pSvmModel = g_pSvmModel_gender;
+	else if(strcmp(name,"scene") == 0)
+        hDetector->pSvmModel = g_pSvmModel_scene;
 
     if (0 == hDetector->pSvmModel)
     {
@@ -97,6 +104,12 @@ THandle SVMDetector_init(THandle hMemBuf, const char *name)
         hDetector->width_base = width_base_gender;
         hDetector->height_base = height_base_gender;
         hDetector->feaUsed = feaUsed_gender;
+    }
+	else if(strcmp(name,"scene") == 0)
+    {
+        hDetector->width_base = width_base_scene;
+        hDetector->height_base = height_base_scene;
+        hDetector->feaUsed = feaUsed_scene;
     }
     
     hDetector->hMemBuf = hMemBuf;
